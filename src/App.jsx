@@ -7,7 +7,6 @@ function App() {
   return (
     <>
       <div>Nguyễn Đắc Khải</div>
-      <br />
       <Button variant="text">Text</Button>
       <Button variant="contained">Contained</Button>
       <Button variant="outlined">Outlined</Button>
