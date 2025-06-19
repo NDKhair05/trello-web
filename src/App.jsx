@@ -1,7 +1,3 @@
-import Button from '@mui/material/Button'
-import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'
-import ThreeDRotation from '@mui/icons-material/ThreeDRotation'
-import Typography from '@mui/material/Typography'
 import { useColorScheme } from '@mui/material/styles'
 // import useMediaQuery from '@mui/material/useMediaQuery'
 import InputLabel from '@mui/material/InputLabel'
@@ -12,12 +8,12 @@ import Box from '@mui/material/Box'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined'
 import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness'
+import Container from '@mui/material/Container'
 
 function ModeSelect() {
   const { mode, setMode } = useColorScheme()
   const handleChange = (event) => {
     const selectedMode = event.target.value
-    console.log(selectedMode)
     setMode(selectedMode)
   }
 
@@ -52,51 +48,38 @@ function ModeSelect() {
   )
 }
 
-function ModeToggle() {
-  const { mode, setMode } = useColorScheme()
-  // const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
-  // const prefersLightMode = useMediaQuery('(prefers-color-scheme: light)')
-  // console.log('preferDarkMode: ', prefersDarkMode)
-  // console.log('preferLightMode: ', prefersLightMode)
-
-  return (
-    <>
-      <Button
-        onClick={() => {
-          setMode(mode === 'dark' ? 'light' : 'light')
-        }}
-      >
-        {'Light'}
-      </Button>
-      <Button
-        onClick={() => {
-          setMode(mode === 'light' ? 'dark' : 'dark')
-        }}
-      >
-        {'Dark'}
-      </Button>
-    </>
-
-  )
-}
-
 function App() {
 
   return (
-    <>
-      <ModeSelect />
-      <hr />
-      <ModeToggle />
-      <hr />
-      <Typography variant="body2" color="error">UIJDBIWJAOJ</Typography>
-      <div>Nguyễn Đắc Khải</div>
-      <Button variant="text">Text</Button>
-      <Button variant="contained">Contained</Button>
-      <Button variant="outlined">Outlined</Button>
-      <br />
-      <AccessAlarmIcon />
-      <ThreeDRotation />
-    </>
+    <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
+      <Box sx={{
+        backgroundColor: 'primary.light',
+        width: '100%',
+        height: (theme) => theme.trello.appBarHeight,
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        <ModeSelect />
+      </Box>
+      <Box sx={{
+        backgroundColor: 'primary.dark',
+        width: '100%',
+        height: (theme) => theme.trello.boardBarHeight,
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        Board Bar
+      </Box>
+      <Box sx={{
+        backgroundColor: 'primary.main',
+        width: '100%',
+        height: (theme) => `calc(100vh - ${theme.trello.appBarHeight} - ${theme.trello.boardBarHeight})`,
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        Board Content
+      </Box>
+    </Container>
   )
 }
 
