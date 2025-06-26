@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Button from '@mui/material/Button'
 import Menu from '@mui/material/Menu'
+import Box from '@mui/material/Box'
 import MenuItem from '@mui/material/MenuItem'
 import Divider from '@mui/material/Divider'
 import ListItemText from '@mui/material/ListItemText'
@@ -22,7 +23,7 @@ function Workspaces() {
     setAnchorEl(null)
   }
   return (
-    <div>
+    <Box>
       <Button
         sx={{ color: 'white' }}
         id="basic-button-workspaces"
@@ -78,7 +79,7 @@ function Workspaces() {
           <ListItemText>Web Clipboard</ListItemText>
         </MenuItem>
       </Menu>
-    </div>
+    </Box>
   )
 }
 
