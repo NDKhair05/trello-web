@@ -36,7 +36,8 @@ function BoardBar() {
       paddingX: 2,
       overflowX: 'auto',
       bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#1976d2'),
-      borderBottom: '1px solid white'
+      borderBottom: '1px solid white',
+      '&::-webkit-scrollbar-track': { m : 2 }
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Chip
@@ -89,14 +90,17 @@ function BoardBar() {
               width: 34,
               height: 34,
               fontSize: 16,
-              border: 'none'
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              '&:first-of-type': { bgcolor: '#a4b0be' }
             }
           }}
         >
           <Tooltip title= "Nguyễn Đắc Khải">
             <Avatar
               alt="Nguyễn Đắc Khải"
-              src="https://scontent-hkg4-1.xx.fbcdn.net/v/t39.30808-1/495859421_1257431382407709_1028444624137258226_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=108&ccb=1-7&_nc_sid=e99d92&_nc_ohc=CBRIt8uq2-sQ7kNvwEOGE_L&_nc_oc=AdlxMj2hkPo0pYj9QehPzsHC0r24S4FiXxfB-bwSjIY-KfiJzfXfJHvqhTF1ujNEMKpOhrG5Vuzc6-ZDIpjCj3W4&_nc_zt=24&_nc_ht=scontent-hkg4-1.xx&_nc_gid=6EPsDk4na8JYtfrQ59dhkw&oh=00_AfO_EZgDawf2Sabnevrm9JEHZaStTxUqD019F4qAPkJrDQ&oe=685B7939"
+              src="https://scontent.fdad3-1.fna.fbcdn.net/v/t39.30808-1/495859421_1257431382407709_1028444624137258226_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=108&ccb=1-7&_nc_sid=e99d92&_nc_eui2=AeE4uIFQvSRkLdSV0pzcs9GkQqNm7zxu9ThCo2bvPG71OLBBnuDJOujEg1FEMVoT57GAuAcDGKzRAX_6VxAWp1mu&_nc_ohc=myjPHdfM9i0Q7kNvwExmo8o&_nc_oc=AdnqBf3v5oZvsaJtPf3Jafscxv5nMDLt8KZw1b9B0JwMynrJpGT0LNdxuQWfq1jYd05Pn6M_oVzGDZgXJ0ByD1gL&_nc_zt=24&_nc_ht=scontent.fdad3-1.fna&_nc_gid=rJn7piyCS2Am43BhgSb-KA&oh=00_AfOuQEq3jflcD2HcQr9OGZTst7Kn7ohZldrPIHUcI16hng&oe=6862B979"
             />
           </Tooltip>
           <Tooltip title= "Nguyễn Thị Nguyệt An">
