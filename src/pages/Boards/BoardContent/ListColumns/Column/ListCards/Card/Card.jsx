@@ -8,62 +8,36 @@ import GroupIcon from '@mui/icons-material/Group'
 import CommentIcon from '@mui/icons-material/Comment'
 import AttachmentIcon from '@mui/icons-material/Attachment'
 
-function Card( { mustangCard, temporaryHideMediaCard } ) {
-  if (mustangCard) {
-    return (
-      <MuiCard sx={{
-        cursor: 'pointer',
-        boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
-        overflow: 'unset'
-      }}>
-        <CardMedia
-          sx={{ height: 140 }}
-          image="https://i.pinimg.com/736x/b2/8e/cf/b28ecfa82b814c73c8f481767725a9cf.jpg"
-          title="green iguana"
-        />
-        <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
-          <Typography>Mustang® EcoBoost® Fastback</Typography>
-        </CardContent>
-        <CardActions sx={{ p: '0 4px 8px 4px' }}>
-          <Button startIcon={<GroupIcon />} size="small">20</Button>
-          <Button startIcon={<CommentIcon />} size="small">15</Button>
-          <Button startIcon={<AttachmentIcon />} size="small">10</Button>
-        </CardActions>
-      </MuiCard>
-    )
+function Card( { card } ) {
+
+  const shouldShowCardAction = () => {
+    return !!card?.memberIds.length || !!card?.comments.length || !!card?.attachments.length
   }
-  if (temporaryHideMediaCard) {
-    return (
-      <MuiCard sx={{
-        cursor: 'pointer',
-        boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
-        overflow: 'unset'
-      }}>
-        <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
-          <Typography>Card 01</Typography>
-        </CardContent>
-      </MuiCard>
-    )
-  }
+
   return (
     <MuiCard sx={{
       cursor: 'pointer',
       boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
       overflow: 'unset'
     }}>
-      <CardMedia
-        sx={{ height: 140 }}
-        image="https://i.pinimg.com/736x/7f/02/f7/7f02f7f6985458a48ddb7ebb3dff550c.jpg"
-        title="green iguana"
-      />
+      {card?.cover && <CardMedia sx={{ height: 140 }} image= {card.cover} />
+      }
       <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
-        <Typography>2024 Porsche 911 GT3 RS (992 I)</Typography>
+        <Typography>{card?.title}</Typography>
       </CardContent>
-      <CardActions sx={{ p: '0 4px 8px 4px' }}>
-        <Button startIcon={<GroupIcon />} size="small">20</Button>
-        <Button startIcon={<CommentIcon />} size="small">15</Button>
-        <Button startIcon={<AttachmentIcon />} size="small">10</Button>
-      </CardActions>
+      {shouldShowCardAction() &&
+        <CardActions sx={{ p: '0 4px 8px 4px' }}>
+          {!!card?.memberIds?.length &&
+            <Button startIcon={<GroupIcon />} size="small">{card?.memberIds?.length}</Button>
+          }
+          {!!card?.comments?.length &&
+            <Button startIcon={<CommentIcon />} size="small">{(card?.comments)?.length}</Button>
+          }
+          {!!card?.attachments?.length &&
+            <Button startIcon={<AttachmentIcon />} size="small">{(card?.attachments)?.length}</Button>
+          }
+        </CardActions>
+      }
     </MuiCard>
   )
 }
