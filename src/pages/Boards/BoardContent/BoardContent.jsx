@@ -45,7 +45,7 @@ function BoardContent({ board }) {
   const [activeDragItemType, setActiveDragItemType] = useState([null])
   const [activeDragItemData, setActiveDragItemData] = useState([null])
   const [oldColumnWhenDragginCard, setOldColumnWhenDraggingCard] = useState([null])
- 
+
   useEffect(() => {
     setOrderedColumns( mapOrder(board?.columns, board?.columnOrderIds, '_id'))
   }, [board])
