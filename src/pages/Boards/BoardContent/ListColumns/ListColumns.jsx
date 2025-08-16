@@ -8,7 +8,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 
-function ListColumns({ columns }) {
+function ListColumns({ columns, createNewColumn, createNewCard }) {
 
   const [openNewColumnForm, setOpenNewColumnForm] = useState(false)
   const toggleOpenNewColumnForm = () => setOpenNewColumnForm(!openNewColumnForm)
@@ -23,6 +23,14 @@ function ListColumns({ columns }) {
       })
       return
     }
+
+    //Tạo dữ liệu Column để gọi API
+    const newColumnData = {
+      title: newColumnTitle
+    }
+
+    createNewColumn(newColumnData)
+
     toggleOpenNewColumnForm()
     setNewColumnTitle('')
   }
@@ -43,7 +51,7 @@ function ListColumns({ columns }) {
         '&::-webkit-scrollbar-track': { m : 2 }
       }}>
         {/*Box Column 01*/ }
-        {columns.map(column => <Column key = {column._id} column = {column}/> )}
+        {columns.map(column => <Column key = {column._id} column = {column} createNewCard= {createNewCard} />)}
         {/*Box Add new column*/}
         {!openNewColumnForm
           ? <Box onClick= {toggleOpenNewColumnForm} sx={{
