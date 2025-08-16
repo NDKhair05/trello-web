@@ -20,13 +20,12 @@ import theme from '~/theme'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
 import ListCards from './ListCards/ListCards'
-import { mapOrder } from '~/utils/sorts'
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { toast } from 'react-toastify'
 
-function Column({ column }) {
+function Column({ column, createNewCard }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column._id,
     data: { ...column }
@@ -45,14 +44,14 @@ function Column({ column }) {
   const handleClick = (event) => { setAnchorEl(event.currentTarget) }
   const handleClose = () => { setAnchorEl(null) }
 
-  const orderedCards = mapOrder(column?.cards, column?.cardOrderIds, '_id')
+  const orderedCards = column.cards
 
   const [openNewCardForm, setOpenNewCardForm] = useState(false)
   const toggleOpenNewCardForm = () => setOpenNewCardForm(!openNewCardForm)
 
   const [newCardTitle, setNewCardTitle] = useState('')
 
-  const addCard = () => {
+  const addNewCard = () => {
     if (!newCardTitle) {
       toast.error('Please enter card title', {
         position: 'bottom-right',
@@ -60,6 +59,14 @@ function Column({ column }) {
       })
       return
     }
+
+    const newCardData = {
+      title: newCardTitle,
+      columnId: column._id
+    }
+
+    createNewCard(newCardData)
+
     toggleOpenNewCardForm()
     setNewCardTitle('')
   }
@@ -186,7 +193,7 @@ function Column({ column }) {
                   },
                   '& label.Mui-focused': { color: (theme) => theme.palette.primary.main },
                   '& .MuiOutlinedInput-root': {
-                    '& fieldset' : { borderColor: (theme) => theme.palette.primary.main } ,
+                    '& fieldset' : { borderColor: (theme) => theme.palette.primary.main },
                     '&:hover fieldset' : { borderColor: (theme) => theme.palette.primary.main },
                     '&.Mui-focused fieldset' : { borderColor: (theme) => theme.palette.primary.main }
                   },
@@ -197,7 +204,7 @@ function Column({ column }) {
               />
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Button
-                  onClick={addCard}
+                  onClick={addNewCard}
                   variant= "contained" color="success" size="small"
                   sx={{
                     boxShadow: 'none',
