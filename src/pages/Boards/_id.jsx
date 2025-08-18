@@ -14,11 +14,13 @@ import {
   createNewCardAPI,
   updateBoardDetailsAPI,
   updateColumnDetailsAPI,
-  moveCardToDifferentColumnAPI
+  moveCardToDifferentColumnAPI,
+  deleteColumnDetailsAPI
 } from '~/apis'
 import { generatePlaceholderCard } from '~/utils/formatters'
 import { mapOrder } from '~/utils/sorts'
 import { isEmpty } from 'lodash'
+import { toast } from 'react-toastify'
 // import { mockData } from '~/apis/mock-data'
 
 function Board() {
@@ -141,6 +143,22 @@ function Board() {
     })
   }
 
+  //Xử lí hành động xóa Column và Card
+  const deleteColumnDetails = (columnId) => {
+    console.log('🚀 ~ deleteColumnDetails ~ columnId:', columnId)
+    //Xử lí chuẩn dữ liệu State Board
+    const newBoard = { ...board }
+    newBoard.columns = newBoard.columns.filter(c => c._id !== columnId)
+    newBoard.columnOrderIds = newBoard.columnOrderIds.filter(_id => _id !== columnId)
+    setBoard(newBoard)
+
+    //Call API
+    deleteColumnDetailsAPI(columnId).then(res => {
+      toast.success(res?.deleteResult)
+    })
+
+  }
+
   if (!board) {
     return (
       <Box sx={{
@@ -163,11 +181,13 @@ function Board() {
       <BoardBar board = {board}/>
       <BoardContent
         board = {board}
+
         createNewColumn = {createNewColumn}
         createNewCard = {createNewCard}
         moveColumn = {moveColumn}
         moveCardInTheSameColumn = {moveCardInTheSameColumn}
         moveCardToDifferentColumn = {moveCardToDifferentColumn}
+        deleteColumnDetails = {deleteColumnDetails}
       />
     </Container>
   )

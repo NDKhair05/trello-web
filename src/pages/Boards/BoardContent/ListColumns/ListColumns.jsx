@@ -8,7 +8,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 
-function ListColumns({ columns, createNewColumn, createNewCard }) {
+function ListColumns({ columns, createNewColumn, createNewCard, deleteColumnDetails }) {
 
   const [openNewColumnForm, setOpenNewColumnForm] = useState(false)
   const toggleOpenNewColumnForm = () => setOpenNewColumnForm(!openNewColumnForm)
@@ -17,10 +17,7 @@ function ListColumns({ columns, createNewColumn, createNewCard }) {
 
   const addColumn = () => {
     if (!newColumnTitle) {
-      toast.error('Please enter column title', {
-        position: 'bottom-left',
-        theme: 'colored'
-      })
+      toast.error('Please enter column title')
       return
     }
 
@@ -51,7 +48,12 @@ function ListColumns({ columns, createNewColumn, createNewCard }) {
         '&::-webkit-scrollbar-track': { m : 2 }
       }}>
         {/*Box Column 01*/ }
-        {columns.map(column => <Column key = {column._id} column = {column} createNewCard= {createNewCard} />)}
+        {columns.map(column => <Column
+          key = {column._id}
+          column = {column}
+          createNewCard= {createNewCard}
+          deleteColumnDetails = {deleteColumnDetails}
+        />)}
         {/*Box Add new column*/}
         {!openNewColumnForm
           ? <Box onClick= {toggleOpenNewColumnForm} sx={{
