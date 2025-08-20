@@ -145,7 +145,6 @@ function Board() {
 
   //Xử lí hành động xóa Column và Card
   const deleteColumnDetails = (columnId) => {
-    console.log('🚀 ~ deleteColumnDetails ~ columnId:', columnId)
     //Xử lí chuẩn dữ liệu State Board
     const newBoard = { ...board }
     newBoard.columns = newBoard.columns.filter(c => c._id !== columnId)
