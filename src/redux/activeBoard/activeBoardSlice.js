@@ -29,7 +29,7 @@ export const activeBoardSlice = createSlice({
   reducers: {
     updateCurrentActiveBoard: (state, action) => {
       //action.payload là chuẩn đặt tên nhận dữ liệu vào reducer, ở đây chúng ta gán nó ra một biến có nghĩa hơn
-      const board = action.payload
+      let board = action.payload
 
       //Xử lí dữ liệu nếu cần thiết...
       //....
@@ -42,7 +42,7 @@ export const activeBoardSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchBoardDetailsAPI.fulfilled, (state, action) => {
       //action.payload ở đây chính là response.data ở trên trả về
-      const board = action.payload
+      let board = action.payload
 
       //Sắp xếp thứ tự các các column luôn ở đây trước khi đưa dữ liệu xuống bên dưới các component con
       board.columns = mapOrder(board.columns, board.columnOrderIds, '_id')
