@@ -35,7 +35,7 @@ export const activeBoardSlice = createSlice({
       //....
 
       //Update lại dữ liệu của cái currentActiveBoard
-      state.updateCurrentActiveBoard = board
+      state.currentActiveBoard = board
     }
   },
   //ExtraReducers: Nơi xử lí dữ liệu bất đồng bộ
@@ -59,7 +59,7 @@ export const activeBoardSlice = createSlice({
       })
 
       //Update lại dữ liệu của cái currentActiveBoard
-      state.updateCurrentActiveBoard = board
+      state.currentActiveBoard = board
 
     })
   }
