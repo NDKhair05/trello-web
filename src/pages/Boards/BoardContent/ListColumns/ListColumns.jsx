@@ -7,15 +7,21 @@ import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
+import { createNewColumnAPI } from '~/apis'
+import { generatePlaceholderCard } from '~/utils/formatters'
+import { cloneDeep } from 'lodash'
+import { useDispatch, useSelector } from 'react-redux'
+import { updateCurrentActiveBoard, selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 
-function ListColumns({ columns, createNewColumn, createNewCard, deleteColumnDetails }) {
-
+function ListColumns({ columns }) {
+  const dispatch = useDispatch()
+  const board = useSelector(selectCurrentActiveBoard)
   const [openNewColumnForm, setOpenNewColumnForm] = useState(false)
   const toggleOpenNewColumnForm = () => setOpenNewColumnForm(!openNewColumnForm)
 
   const [newColumnTitle, setNewColumnTitle] = useState('')
 
-  const addColumn = () => {
+  const addColumn = async () => {
     if (!newColumnTitle) {
       toast.error('Please enter column title')
       return
@@ -26,8 +32,26 @@ function ListColumns({ columns, createNewColumn, createNewCard, deleteColumnDeta
       title: newColumnTitle
     }
 
-    createNewColumn(newColumnData)
+    //GỌi API tạo mới dữ liệu Column
+    const createdColumn = await createNewColumnAPI({
+      ...newColumnData,
+      boardId: board._id
+    })
 
+    //Khi tạo mới Column thì chưa có Card nên bị lỗi kéo thả Column rỗng
+    createdColumn.cards = [generatePlaceholderCard(createdColumn)]
+    createdColumn.cardOrderIds = [generatePlaceholderCard(createdColumn)._id]
+
+    //Cập nhật State Board
+    //Phía frontend chúng ta phải tự làm đúng lại state data board (thay vì phải gọi lại api fecthBoardDetailsAPI)
+    const newBoard = cloneDeep(board)
+    newBoard.columns.push(createdColumn)
+    newBoard.columnOrderIds.push(createdColumn._id)
+
+    //Cập nhật dữ liệu State Board trong Redux
+    dispatch(updateCurrentActiveBoard(newBoard))
+
+    //Clear Input add column when closing
     toggleOpenNewColumnForm()
     setNewColumnTitle('')
   }
@@ -48,12 +72,12 @@ function ListColumns({ columns, createNewColumn, createNewCard, deleteColumnDeta
         '&::-webkit-scrollbar-track': { m : 2 }
       }}>
         {/*Box Column 01*/ }
-        {columns.map(column => <Column
-          key = {column._id}
-          column = {column}
-          createNewCard= {createNewCard}
-          deleteColumnDetails = {deleteColumnDetails}
-        />)}
+        {columns.map(column =>
+          <Column
+            key = {column._id}
+            column = {column}
+          />
+        )}
         {/*Box Add new column*/}
         {!openNewColumnForm
           ? <Box onClick= {toggleOpenNewColumnForm} sx={{
