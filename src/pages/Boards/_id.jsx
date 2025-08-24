@@ -7,6 +7,7 @@ import AppBar from '~/components/AppBar/AppBar'
 import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
 import { useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 
 import {
   updateBoardDetailsAPI,
@@ -26,12 +27,13 @@ function Board() {
   const dispatch = useDispatch()
   // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
+  const { boardId } = useParams()
 
   useEffect(() => {
-    const boardId = '6896e71dbc96537aa7507104'
+    // const boardId = '6896e71dbc96537aa7507104'
     //Call API
     dispatch(fetchBoardDetailsAPI(boardId))
-  }, [dispatch])
+  }, [dispatch, boardId])
 
   //Func này có nhiệm vụ là gọi API và xử lí khi kéo thả Column xong xuôi
   const moveColumn = (dndOrderedColumns) => {
