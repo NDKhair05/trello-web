@@ -89,6 +89,7 @@ function ListColumns({ columns }) {
             bgcolor: '#ffffff3d'
           }}>
             <Button
+              className="interceptor-loading"
               startIcon = {<NoteAddIcon />}
               sx={{
                 color: 'white',
