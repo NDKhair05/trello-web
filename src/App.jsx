@@ -2,6 +2,7 @@ import Board from '~/pages/Boards/_id'
 import NotFound from '~/pages/404/NotFound'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Auth from '~/pages/Auth/Auth'
+import AccountVerification from '~/pages/Auth/AccountVerification'
 
 function App() {
 
@@ -21,6 +22,9 @@ function App() {
 
       {/*404 not found page*/}
       <Route path='*' element={ <NotFound />} />
+
+      {/*Account Verification page*/}
+      <Route path='account/verification' element={ <AccountVerification />} />
     </Routes>
   )
 }
