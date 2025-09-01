@@ -1,5 +1,5 @@
 // TrungQuanDev: https://youtube.com/@trungquandev
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Avatar from '@mui/material/Avatar'
@@ -20,13 +20,25 @@ import {
   FIELD_REQUIRED_MESSAGE
 } from '~/utils/validators'
 import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
+import { toast } from 'react-toastify'
+import { loginUserAPI } from '~/redux/user/userSlice'
+import { useDispatch } from 'react-redux'
 
 function LoginForm() {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const { register, handleSubmit, formState : { errors } } = useForm()
 
   const submitLogIn = (data) => {
-    console.log('submit login:', data )
+    const { email, password } = data
+    toast.promise(
+      dispatch(loginUserAPI({ email, password })),
+      { pending: 'Logging in....' }
+    ).then(res => {
+      console.log(res)
+      if (!res.error) navigate('/')
+    })
   }
 
   return (
@@ -46,7 +58,7 @@ function LoginForm() {
             Author: Nguyen Khai
           </Box>
           <Box sx={{ marginTop: '1em', display: 'flex', justifyContent: 'center', flexDirection: 'column', padding: '0 1em' }}>
-            <Alert severity="success" sx={{ '.MuiAlert-message': { overflow: 'hidden' } }}>
+            {/* <Alert severity="success" sx={{ '.MuiAlert-message': { overflow: 'hidden' } }}>
               Your email&nbsp;
               <Typography variant="span" sx={{ fontWeight: 'bold', '&:hover': { color: '#fdba26' } }}>kn87051@gmail.com</Typography>
               &nbsp;has been verified.<br />Now you can login to enjoy our services! Have a good day!
@@ -55,7 +67,7 @@ function LoginForm() {
               An email has been sent to&nbsp;
               <Typography variant="span" sx={{ fontWeight: 'bold', '&:hover': { color: '#fdba26' } }}>kn87051@gmail.com</Typography>
               <br />Please check and verify your account before logging in!
-            </Alert>
+            </Alert> */}
           </Box>
           <Box sx={{ padding: '0 1em 1em 1em' }}>
             <Box sx={{ marginTop: '1em' }}>
