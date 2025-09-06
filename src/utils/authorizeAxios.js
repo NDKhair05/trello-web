@@ -42,7 +42,7 @@ authorizedAxiosInstance.interceptors.response.use((response) => {
   }
 
   //Hiển thị mọi mã lỗi trên màn hình trừ 410 - GONE phục vụ việc tự động refresh lại token
-  if (error.respone?.status !== 410) {
+  if (error.response?.status !== 410) {
     toast.error(errorMessage)
   }
 
