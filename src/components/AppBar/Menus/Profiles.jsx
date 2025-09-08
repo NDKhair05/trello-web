@@ -9,6 +9,9 @@ import Tooltip from '@mui/material/Tooltip'
 import PersonAdd from '@mui/icons-material/PersonAdd'
 import Settings from '@mui/icons-material/Settings'
 import Logout from '@mui/icons-material/Logout'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectCurrentUser, logoutUserAPI } from '~/redux/user/userSlice'
+import { useConfirm } from 'material-ui-confirm'
 
 function Profiles() {
   const [anchorEl, setAnchorEl] = React.useState(null)
@@ -19,6 +22,21 @@ function Profiles() {
   const handleClose = () => {
     setAnchorEl(null)
   }
+
+  const dispatch = useDispatch()
+  const currentUser = useSelector(selectCurrentUser)
+
+  const confirmLogout = useConfirm()
+  const handleLogout = () => {
+    confirmLogout({
+      title: 'Log out of your account?',
+      confirmationText: 'Confirm',
+      cancellationText: 'Cancel'
+    }).then(() => {
+      dispatch(logoutUserAPI())
+    }).catch(() => {})
+  }
+
   return (
     <div>
       <Tooltip title="Account settings">
@@ -33,7 +51,7 @@ function Profiles() {
           <Avatar
             sx={{ width: 36, height: 36 }}
             alt="NguyenDacKhai"
-            src="https://scontent.fdad3-1.fna.fbcdn.net/v/t39.30808-1/495859421_1257431382407709_1028444624137258226_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=108&ccb=1-7&_nc_sid=e99d92&_nc_eui2=AeE4uIFQvSRkLdSV0pzcs9GkQqNm7zxu9ThCo2bvPG71OLBBnuDJOujEg1FEMVoT57GAuAcDGKzRAX_6VxAWp1mu&_nc_ohc=myjPHdfM9i0Q7kNvwExmo8o&_nc_oc=AdnqBf3v5oZvsaJtPf3Jafscxv5nMDLt8KZw1b9B0JwMynrJpGT0LNdxuQWfq1jYd05Pn6M_oVzGDZgXJ0ByD1gL&_nc_zt=24&_nc_ht=scontent.fdad3-1.fna&_nc_gid=rJn7piyCS2Am43BhgSb-KA&oh=00_AfOuQEq3jflcD2HcQr9OGZTst7Kn7ohZldrPIHUcI16hng&oe=6862B979"
+            src= {currentUser?.avatar}
           />
         </IconButton>
       </Tooltip>
@@ -42,15 +60,19 @@ function Profiles() {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
+        onClick={handleClose}
         MenuListProps={{
           'aria-labelledby': 'basic-button-profiles'
         }}
       >
-        <MenuItem>
-          <Avatar sx={{ width: 28, height: 28, mr: 2 }}/> Profile
-        </MenuItem>
-        <MenuItem>
-          <Avatar sx={{ width: 28, height: 28, mr: 2 }}/> My account
+        <MenuItem sx={{
+          '&:hover': { color: 'success.light' }
+        }} >
+          <Avatar
+            sx={{ width: 28, height: 28, mr: 2 }}
+            alt="NguyenDacKhai"
+            src= {currentUser?.avatar}
+          /> Profile
         </MenuItem>
         <Divider />
         <MenuItem>
@@ -65,9 +87,16 @@ function Profiles() {
           </ListItemIcon>
           Settings
         </MenuItem>
-        <MenuItem>
+        <MenuItem
+          onClick={handleLogout}
+          sx={{
+            '&:hover': {
+              color: 'warning.dark',
+              '& .logout-icon': { color: 'warning.dark' }
+            }
+          }} >
           <ListItemIcon>
-            <Logout fontSize="small" />
+            <Logout className="logout-icon" fontSize="small" />
           </ListItemIcon>
           Logout
         </MenuItem>
