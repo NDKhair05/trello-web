@@ -58,7 +58,7 @@ authorizedAxiosInstance.interceptors.response.use((response) => {
 
     originalRequest._retry = true
 
-    //Kiểm tra xem nếu chưa có refreshTokenPromise thì thực hiện 
+    //Kiểm tra xem nếu chưa có refreshTokenPromise thì thực hiện
     if (!refreshTokenPromise) {
       refreshTokenPromise = refreshTokenAPI()
         .then(data => {
