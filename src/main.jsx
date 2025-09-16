@@ -21,6 +21,7 @@ const persistor = persistStore(store)
 
 //Xử lí kỹ thuật inject store: là kỹ thuật khi cần sử dụng biến redux store ở các file ngoài phạm vi component
 import { injectStore } from '~/utils/authorizeAxios'
+import { GlobalStyles } from '@mui/material'
 injectStore(store)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -35,6 +36,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             confirmationButtonProps: { color: 'secondary', variant: 'outlined' },
             buttonOrder: ['confirm', 'cancel']
           }}>
+            <GlobalStyles styles = { { a: { textDecoration: 'none' } } } />
             <CssBaseline />
             <App />
             <ToastContainer position = "bottom-left" theme = 'colored' />

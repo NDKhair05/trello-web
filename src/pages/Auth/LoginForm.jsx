@@ -10,7 +10,7 @@ import { ReactComponent as TrelloIcon } from '~/assets/trello.svg'
 import CardActions from '@mui/material/CardActions'
 import TextField from '@mui/material/TextField'
 import Zoom from '@mui/material/Zoom'
-import Alert from '@mui/material/Alert'
+// import Alert from '@mui/material/Alert'
 import { useForm } from 'react-hook-form'
 import {
   EMAIL_RULE,
@@ -36,7 +36,6 @@ function LoginForm() {
       dispatch(loginUserAPI({ email, password })),
       { pending: 'Logging in....' }
     ).then(res => {
-      console.log(res)
       //Kiểm tra lỗi (nếu thành công) thì redirect về route /
       if (!res.error) navigate('/')
     })
