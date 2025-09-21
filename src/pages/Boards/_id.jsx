@@ -52,9 +52,8 @@ function Board() {
     if (columnToUpdate) {
       columnToUpdate.cards = dndOrderedCards
       columnToUpdate.cardOrderIds = dndOrderedCardsIds
-      dispatch(updateCurrentActiveBoard(newBoard))
     }
-
+    dispatch(updateCurrentActiveBoard(newBoard))
     //Gọi API update Column
     updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderedCardsIds })
   }
