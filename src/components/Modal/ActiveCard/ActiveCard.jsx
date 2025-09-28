@@ -32,7 +32,7 @@ import CardUserGroup from './CardUserGroup'
 import CardDescriptionMdEditor from './CardDescriptionMdEditor'
 import CardActivitySection from './CardActivitySection'
 import { useDispatch, useSelector } from 'react-redux'
-import { clearCurrentActiveCard, selectCurrentActiveCard, updateCurrentAcitveCard } from '~/redux/acitveCard/activeCardSlice'
+import { clearAndHideCurrentActiveCard, selectCurrentActiveCard, updateCurrentAcitveCard, selectIsShowModalActiveCard } from '~/redux/acitveCard/activeCardSlice'
 
 import { styled } from '@mui/material/styles'
 import { updateCardDetailsAPI } from '~/apis'
@@ -64,12 +64,13 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 function ActiveCard() {
   const dispatch = useDispatch()
   const activeCard = useSelector(selectCurrentActiveCard)
-  //Không dùng biến state để check đóng mở Modal nữa vì sẽ check bên Boards/ _id.jsx
+  const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
+  //Không dùng biến state để check đóng mở Modal nữa vì sẽ check theo biến isShowModalActiveCard trong Redux
   // const [isOpen, setIsOpen] = useState(true)
   // const handleOpenModal = () => setIsOpen(true)
   const handleCloseModal = () => {
     // setIsOpen(false)
-    dispatch(clearCurrentActiveCard())
+    dispatch(clearAndHideCurrentActiveCard())
   }
 
   //Function gọi API chung cho các trường hợp update card title, description, cover, comment, ....
@@ -112,7 +113,7 @@ function ActiveCard() {
   return (
     <Modal
       disableScrollLock
-      open={true}
+      open={isShowModalActiveCard}
       onClose={handleCloseModal} // Sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
       sx={{ overflowY: 'auto' }}>
       <Box sx={{

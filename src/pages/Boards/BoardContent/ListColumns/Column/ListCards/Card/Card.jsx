@@ -8,7 +8,7 @@ import GroupIcon from '@mui/icons-material/Group'
 import CommentIcon from '@mui/icons-material/Comment'
 import AttachmentIcon from '@mui/icons-material/Attachment'
 import { useDispatch } from 'react-redux'
-import { updateCurrentAcitveCard } from '~/redux/acitveCard/activeCardSlice'
+import { updateCurrentAcitveCard, showModalActiveCard } from '~/redux/acitveCard/activeCardSlice'
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -33,7 +33,10 @@ function Card( { card } ) {
   }
 
   const setActiveCard = () => {
+    // Set cái active card hiện lên vào trong redux
     dispatch(updateCurrentAcitveCard(card))
+    // Hiện cái Active Card lên
+    dispatch(showModalActiveCard())
   }
 
   return (
