@@ -24,12 +24,6 @@ import { injectStore } from '~/utils/authorizeAxios'
 import { GlobalStyles } from '@mui/material'
 injectStore(store)
 
-//Cấu hình socket.io tại đây và export biến socketIoInstance
-//https://socket.io/how-to/use-with-react
-import { io } from 'socket.io-client'
-import { API_ROOT } from '~/utils/constants'
-export const socketIoInstance = io(API_ROOT)
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}>
     <PersistGate persistor={persistor} >
