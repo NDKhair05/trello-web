@@ -18,7 +18,7 @@ import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined'
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
@@ -40,10 +40,12 @@ import {
 } from '~/redux/acitveCard/activeCardSlice'
 
 import { styled } from '@mui/material/styles'
-import { updateCardDetailsAPI } from '~/apis'
-import { updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { deleteCardDetailsAPI, updateCardDetailsAPI } from '~/apis'
+import { selectCurrentActiveBoard, updateCardInBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
+import { useConfirm } from 'material-ui-confirm'
+import { cloneDeep } from 'lodash'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -73,6 +75,8 @@ function ActiveCard() {
   const activeCard = useSelector(selectCurrentActiveCard)
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
   const currentUser = useSelector(selectCurrentUser)
+  const board = useSelector(selectCurrentActiveBoard)
+
 
   //Không dùng biến state để check đóng mở Modal nữa vì sẽ check theo biến isShowModalActiveCard trong Redux
   // const [isOpen, setIsOpen] = useState(true)
@@ -125,6 +129,40 @@ function ActiveCard() {
 
   const onUpdateCardMembers = (incomingMemberInfo) => {
     callApiUpdateCard({ incomingMemberInfo })
+  }
+
+  const confirmDeleteCard = useConfirm()
+  const handleDeleteCard = () => {
+    confirmDeleteCard({
+      title: 'Delete this Card?',
+      description: 'This action will detele permanently your Card. Are you sure?',
+      // allowClose: false,
+      // dialogProps: { maxWidth: 'xs' },
+      // cancellationButtonProps: { color:'inherit' },
+      confirmationButtonProps: { color: 'warning', variant: 'outlined' },
+      confirmationText: 'Confirm',
+      cancellationText: 'Cancel'
+    })
+      .then(() => {
+        const newBoard = cloneDeep(board)
+        const column = newBoard.columns.find(c => c._id === activeCard.columnId)
+        newBoard.columns.forEach(c => {
+          if (c._id === column._id) {
+            c.cards = column.cards.filter(card => card._id !== activeCard._id),
+            c.cardOrderIds = column.cardOrderIds.filter(_id => _id !== activeCard._id)
+          }
+        })
+        dispatch(updateCurrentActiveBoard(newBoard))
+
+        //Gọi API xóa một Card
+        deleteCardDetailsAPI(activeCard._id).then(res => {
+          toast.success(res?.deleteResult)
+          handleCloseModal()
+        })
+
+      })
+      .catch(() => {})
+
   }
 
   return (
@@ -262,7 +300,17 @@ function ActiveCard() {
             <Stack direction="column" spacing={1}>
               <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem>
               <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem>
-              <SidebarItem><AutoAwesomeOutlinedIcon fontSize="small" />Make Template</SidebarItem>
+              <SidebarItem
+                onClick={handleDeleteCard}
+                sx={{
+                  '&:hover': {
+                    color: 'warning.dark',
+                    '& .delete-forever-icon': { color: 'warning.dark' }
+                  }
+                }}
+              >
+                <DeleteForeverIcon fontSize="small" className="delete-forever-icon" />Delete
+              </SidebarItem>
               <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
               <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
             </Stack>

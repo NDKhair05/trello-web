@@ -113,8 +113,8 @@ function Column({ column }) {
   const confirmDeleteColumn = useConfirm()
   const handleDeleteColumn = () => {
     confirmDeleteColumn({
-      title: 'Delete Column?',
-      description: 'This action will permanently your Column and its Cards. Are you sure?',
+      title: 'Delete this Column?',
+      description: 'This action will delete permanently your Column and its Cards. Are you sure?',
       // allowClose: false,
       // dialogProps: { maxWidth: 'xs' },
       // cancellationButtonProps: { color:'inherit' },

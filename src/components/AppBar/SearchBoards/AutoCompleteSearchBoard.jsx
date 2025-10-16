@@ -48,7 +48,6 @@ function AutoCompleteSearchBoard() {
       })
   }
   // Làm useDebounceFn ở trên vào useDebounceFn và cho delay 1s sau khi dừng gõ phím thì mới chạy function
-
   const debounceSearchBox = useDebounceFn(handleInputSearchChange, 1000)
 
   // Khi chúng ta select chọn một cái board cụ thể thì sẽ điều hướng tới board đó luôn
