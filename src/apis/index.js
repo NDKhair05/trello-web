@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify'
 import authorizedAxiosInstance from '~/utils/authorizeAxios'
-import { API_ROOT } from '~/utils/constants'
+import { API_ROOT, NOTIFICATION_TYPES } from '~/utils/constants'
 
 //Boards
 //Moved to Redux
@@ -80,8 +80,24 @@ export const updateCardDetailsAPI = async (cardId, updateData) => {
   return response.data
 }
 
+// Notifications
 export const inviteUserToBoardAPI = async (data) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/invitations/board`, data)
   toast.success('User invited to board successfully')
   return response.data
+}
+
+export const addNotificationAPI = async (data) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/notifications`, data)
+  return response.data
+}
+
+export const deleteNotificationAPI = async (notificationId, type) => {
+  if (type === NOTIFICATION_TYPES.BOARD_INVITATION) {
+    const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/invitations/${notificationId}`)
+    return response.data
+  } else if (type === NOTIFICATION_TYPES.RESPOND_INVITATION) {
+    const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/notifications/${notificationId}`)
+    return response.data
+  }
 }

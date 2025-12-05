@@ -24,8 +24,6 @@ export const activeCardSlice = createSlice({
 
     updateCurrentAcitveCard: (state, action) => {
       const fullCard = action.payload
-
-
       state.currentActiveCard = fullCard
     }
   },

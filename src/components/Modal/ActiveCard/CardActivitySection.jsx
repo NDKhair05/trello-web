@@ -25,7 +25,7 @@ function CardActivitySection({ cardComments = [], onAddCardComment }) {
         content: event.target.value.trim()
       }
       // Gọi lên props ở component cha
-      onAddCardComment(commentToAdd).then(() =>{
+      onAddCardComment(commentToAdd).then(() => {
         event.target.value = ''
       })
     }

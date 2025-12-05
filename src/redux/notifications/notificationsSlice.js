@@ -6,11 +6,18 @@ const initialState = {
   currentNotifications: null
 }
 
-export const fetchInvitationsAPI = createAsyncThunk(
-  'notifications/fetchInvitationsAPI',
+export const fetchAllNotificationsAPI = createAsyncThunk(
+  'notifications/fetchAllNotificationsAPI',
   async () => {
-    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/invitations`)
-    return response.data
+    const [invRes, notiRes] = await Promise.all([
+      authorizedAxiosInstance.get(`${API_ROOT}/v1/invitations`),
+      authorizedAxiosInstance.get(`${API_ROOT}/v1/notifications`)
+    ])
+
+    const merged = [...invRes.data, ...notiRes.data].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    )
+    return merged
   }
 )
 
@@ -40,10 +47,8 @@ export const notificationsSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchInvitationsAPI.fulfilled, (state, action) => {
-      let incomingInvitations = action.payload
-
-      state.currentNotifications = Array.isArray(incomingInvitations) ? incomingInvitations.reverse() : []
+    builder.addCase(fetchAllNotificationsAPI.fulfilled, (state, action) => {
+      state.currentNotifications = action.payload
     })
     builder.addCase(updateBoardInvitationAPI.fulfilled, (state, action) => {
       const incomingInvitation = action.payload
@@ -58,7 +63,8 @@ export const notificationsSlice = createSlice({
 export const {
   clearCurrentNotifications,
   updateCurrentNotifications,
-  addNotification
+  addNotification,
+  removeNotification
 } = notificationsSlice.actions
 
 export const selectCurrentNotifications = state => {

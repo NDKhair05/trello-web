@@ -5,6 +5,7 @@ import { API_ROOT } from '~/utils/constants'
 import { generatePlaceholderCard } from '~/utils/formatters'
 import { mapOrder } from '~/utils/sorts'
 import { isEmpty } from 'lodash'
+import { socketIoInstance } from '~/sockeClient'
 
 //Khởi tạo giá trị State của một cái Slice trong redux
 const initialState = {
@@ -32,7 +33,7 @@ export const activeBoardSlice = createSlice({
       let board = action.payload
 
       //Xử lí dữ liệu nếu cần thiết...
-      //....
+      socketIoInstance.emit('FE_UPDATE_ACTIVE_BOARD', board)
 
       //Update lại dữ liệu của cái currentActiveBoard
       state.currentActiveBoard = board

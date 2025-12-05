@@ -66,13 +66,14 @@ function Column({ column }) {
   }
 
   const onUpdateColumnTitle = (newTitle) => {
+    const newBoard = cloneDeep(board)
+    const columnToUpdate = newBoard.columns.find(c => c._id === column._id )
+    if (columnToUpdate) columnToUpdate.title = newTitle
     //Call API
-    updateColumnDetailsAPI(column._id, { title: newTitle }).then(() => {
-      const newBoard = cloneDeep(board)
-      const columnToUpdate = newBoard.columns.find(c => c._id === column._id )
-      if (columnToUpdate) columnToUpdate.title = newTitle
-      dispatch(updateCurrentActiveBoard(newBoard))
-    })
+    updateColumnDetailsAPI(column._id, { title: newTitle })
+      .then(() => {
+        dispatch(updateCurrentActiveBoard(newBoard))
+      })
   }
 
   const addNewCard = async () => {
@@ -128,11 +129,11 @@ function Column({ column }) {
         const newBoard = { ...board }
         newBoard.columns = newBoard.columns.filter(c => c._id !== column._id)
         newBoard.columnOrderIds = newBoard.columnOrderIds.filter(_id => _id !== column._id)
-        dispatch(updateCurrentActiveBoard(newBoard))
 
         //GỌi API xóa 1 Column
         deleteColumnDetailsAPI(column._id).then(res => {
           toast.success(res?.deleteResult)
+          dispatch(updateCurrentActiveBoard(newBoard))
         })
       })
       .catch(() => {})

@@ -46,6 +46,8 @@ import { selectCurrentUser } from '~/redux/user/userSlice'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 import { useConfirm } from 'material-ui-confirm'
 import { cloneDeep } from 'lodash'
+import { socketIoInstance } from '~/sockeClient'
+import { useEffect } from 'react'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -77,6 +79,22 @@ function ActiveCard() {
   const currentUser = useSelector(selectCurrentUser)
   const board = useSelector(selectCurrentActiveBoard)
 
+  useEffect(() => {
+    if (!activeCard?._id) return
+
+    const updateCurrentActiveCardSocket = (card) => {
+      if (card._id === activeCard._id) {
+        dispatch(updateCurrentAcitveCard(card))
+      }
+    }
+
+    socketIoInstance.on('BE_UPDATE_ACTIVE_CARD', updateCurrentActiveCardSocket)
+
+    return () => {
+      socketIoInstance.off('BE_UPDATE_ACTIVE_CARD', updateCurrentActiveCardSocket)
+    }
+  }, [dispatch, activeCard?._id])
+
 
   //Không dùng biến state để check đóng mở Modal nữa vì sẽ check theo biến isShowModalActiveCard trong Redux
   // const [isOpen, setIsOpen] = useState(true)
@@ -95,6 +113,9 @@ function ActiveCard() {
 
     //B2: Cập nhật lại cái bản ghi card trong cái activeBoard(nested data)
     dispatch(updateCardInBoard(updatedCard))
+
+    socketIoInstance.emit('FE_UPDATE_ACTIVE_BOARD', board)
+    socketIoInstance.emit('FE_UPDATE_ACTIVE_CARD', updatedCard)
 
     return updatedCard
   }
@@ -152,14 +173,15 @@ function ActiveCard() {
             c.cardOrderIds = column.cardOrderIds.filter(_id => _id !== activeCard._id)
           }
         })
-        dispatch(updateCurrentActiveBoard(newBoard))
 
         //Gọi API xóa một Card
         deleteCardDetailsAPI(activeCard._id).then(res => {
           toast.success(res?.deleteResult)
           handleCloseModal()
         })
-
+          .then(() => {
+            dispatch(updateCurrentActiveBoard(newBoard))
+          })
       })
       .catch(() => {})
 
