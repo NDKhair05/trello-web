@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import AppBar from '~/components/AppBar/AppBar'
 import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
 import Container from '@mui/material/Container'
@@ -11,19 +11,19 @@ import Divider from '@mui/material/Divider'
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import ListAltIcon from '@mui/icons-material/ListAlt'
 import HomeIcon from '@mui/icons-material/Home'
-import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import CardMedia from '@mui/material/CardMedia'
 import Pagination from '@mui/material/Pagination'
 import PaginationItem from '@mui/material/PaginationItem'
 import { Link, useLocation } from 'react-router-dom'
-import randomColor from 'randomcolor'
 import SidebarCreateBoardModal from './create'
 
 import { styled } from '@mui/material/styles'
 import { fetchBoardsAPI } from '~/apis'
 import { DEFAULT_PAGE, DEFAULT_ITEMS_PER_PAGE } from '~/utils/constants'
+import { useSelector } from 'react-redux'
+import { selectCurrentUser } from '~/redux/user/userSlice'
 // Styles của mấy cái Sidebar item menu, anh gom lại ra đây cho gọn.
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -43,6 +43,7 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 }))
 
 function Boards() {
+  const user = useSelector(selectCurrentUser)
   // Số lượng bản ghi boards hiển thị tối đa trên 1 page tùy dự án (thường sẽ là 12 cái)
   const [boards, setBoards] = useState(null)
   // Tổng toàn bộ số lượng bản ghi boards có trong Database mà phía BE trả về để FE dùng tính toán phân trang
@@ -81,14 +82,39 @@ function Boards() {
     fetchBoardsAPI(location.search).then(updateStateData)
   }
 
+  const { ownerBoards, memberBoards } = useMemo(() => {
+    if (!boards) {
+      return { ownerBoards: [], memberBoards: [] }
+    }
+
+    const currentUserId = user?._id
+
+    const filterOwnerBoards = boards.filter(b => {
+      const isOwner = b?.ownerIds?.includes(currentUserId)
+      return isOwner
+    })
+
+    const filterMemberBoards = boards.filter(b => {
+      const isNotOwner = !b?.ownerIds?.includes(currentUserId)
+      const isMember = b?.memberIds?.includes(currentUserId)
+
+      return isNotOwner & isMember
+    })
+
+    return {
+      ownerBoards: filterOwnerBoards,
+      memberBoards: filterMemberBoards
+    }
+  }, [boards, user?._id])
   // Lúc chưa tồn tại boards > đang chờ gọi api thì hiện loading
   if (!boards) {
     return <PageLoadingSpinner caption="Loading Boards..." />
   }
 
+
   return (
     <Container disableGutters maxWidth={false}>
-      <AppBar />
+      <AppBar status='default' />
       <Box sx={{ paddingX: 2, my: 4 }}>
         <Grid container spacing={2}>
           <Grid xs={12} sm={3}>
@@ -111,50 +137,173 @@ function Boards() {
               <SidebarCreateBoardModal afterCreatedNewBoard= {afterCreatedNewBoard} />
             </Stack>
           </Grid>
-
           <Grid xs={12} sm={9}>
             <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>Your boards:</Typography>
 
             {/* Trường hợp gọi API nhưng không tồn tại cái board nào trong Database trả về */}
-            {boards?.length === 0 &&
+            {ownerBoards?.length === 0 &&
               <Typography variant="span" sx={{ fontWeight: 'bold', mb: 3 }}>No result found!</Typography>
             }
 
-            {/* Trường hợp gọi API và có boards trong Database trả về thì render danh sách boards */}
-            {boards?.length > 0 &&
+            {/* Trường hợp gọi API và có ownerBoards trong Database trả về thì render danh sách ownerBoards */}
+            {ownerBoards?.length > 0 &&
               <Grid container spacing={2}>
                 {boards.map(b =>
                   <Grid xs={2} sm={3} md={4} key={b._id}>
-                    <Card sx={{ width: '250px' }}>
-                      {/* Ý tưởng mở rộng về sau làm ảnh Cover cho board nhé */}
-                      {/* <CardMedia component="img" height="100" image="https://picsum.photos/100" /> */}
-                      <Box sx={{ height: '50px', backgroundColor: randomColor() }}></Box>
+                    <Box
+                      component={Link}
+                      to={`/boards/${b._id}`}
+                      sx={{
+                        mt: 1,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      {/* Áp dụng CSS Hover cho Card */}
+                      <Card
+                        sx={{
+                          width: '250px',
+                          position: 'relative', // Quan trọng: Thiết lập vị trí tương đối
+                          overflow: 'hidden', // Quan trọng: Đảm bảo ảnh/overlay nằm trong Card
+                          cursor: 'pointer',
 
-                      <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
-                        <Typography gutterBottom variant="h6" component="div">
-                          {b?.title}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                          {b?.description}
-                        </Typography>
-                        <Box
-                          component={Link}
-                          to={`/boards/${b._id}`}
+                          // 1. Quy tắc Hover
+                          '&:hover': {
+                            // Khi hover lên Card, chúng ta thay đổi trạng thái của CardMedia
+                            ['& .MuiCardMedia-root']: {
+                              // Hiệu ứng tối ảnh bằng filter: brightness
+                              filter: 'brightness(50%)',
+                              transition: 'filter 0.2s ease-in-out'
+                            }
+                          },
+
+                          // 2. Quy tắc mặc định cho CardMedia
+                          ['& .MuiCardMedia-root']: {
+                            filter: 'brightness(100%)', // Đảm bảo độ sáng ban đầu
+                            transition: 'filter 0.2s ease-in-out' // Hiệu ứng chuyển đổi
+                          }
+
+                        }}
+                      >
+                        <CardMedia
+                          component="img"
+                          height="100"
                           sx={{
-                            mt: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            color: 'primary.main',
-                            '&:hover': { color: 'primary.light' }
-                          }}>
-                          Go to board <ArrowRightIcon fontSize="small" />
-                        </Box>
-                      </CardContent>
-                    </Card>
+                            bgcolor: (theme) => (b?.theme?.type === 'default') ? (theme.palette.mode === 'dark' ? '#2c3e50' : '#1565c0') : 'none',
+                            backgroundImage: (b?.theme?.type === 'default') ? 'none' : (b.theme?.value)
+                          }}
+                        />
+
+                        {/* Card Content giữ nguyên */}
+                        <CardContent sx={{ p: 1, '&:last-child': { p: 1 } }}>
+                          <Typography gutterBottom variant="h6" component="div" sx={{ fontSize: '20px' }}>
+                            {b?.title}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            }
+
+            {/* Trường hợp gọi API và có totalBoards trong Database trả về thì render khu vực phân trang  */}
+            {(totalBoards > 0) &&
+              <Box sx={{ my: 3, pr: 5, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <Pagination
+                  size="large"
+                  color="secondary"
+                  showFirstButton
+                  showLastButton
+                  /*Giá trị prop count của component Pagination là để hiển thị tổng số lượng page,
+                  công thức là lấy Tổng số lượng bản ghi chia cho số lượng bản ghi muốn hiển thị
+                  trên 1 page (ví dụ thường để 12, 24, 26, 48...vv). sau cùng là làm tròn số lên bằng hàm Math.ceil*/
+                  count={Math.ceil(totalBoards / DEFAULT_ITEMS_PER_PAGE)}
+                  // Giá trị của page hiện tại đang đứng
+                  page={page}
+                  // Render các page item và đồng thời cũng là những cái link để chúng ta click chuyển trang
+                  renderItem={(item) => (
+                    <PaginationItem
+                      component={Link}
+                      to={`/boards${item.page === DEFAULT_PAGE ? '' : `?page=${item.page}`}`}
+                      {...item}
+                    />
+                  )}
+                />
+              </Box>
+            }
+          </Grid>
+          {/*Grid ảo để định hình các grid dưới*/}
+          <Grid xs={12} sm={3}>
+          </Grid>
+          <Grid xs={12} sm={9}>
+            <Divider sx={{ my: 5 }} />
+            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>Guess&apos;s boards:</Typography>
+
+            {/* Trường hợp gọi API nhưng không tồn tại cái board nào trong Database trả về */}
+            {memberBoards?.length === 0 &&
+              <Typography variant="span" sx={{ fontWeight: 'bold', mb: 3 }}>No result found!</Typography>
+            }
+
+            {/* Trường hợp gọi API và có memberBoards trong Database trả về thì render danh sách memberBoards */}
+            {memberBoards?.length > 0 &&
+              <Grid container spacing={2}>
+                {memberBoards.map(b =>
+                  <Grid xs={2} sm={3} md={4} key={b._id}>
+                    <Box
+                      component={Link}
+                      to={`/boards/${b._id}`}
+                      sx={{
+                        mt: 1,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      {/* Áp dụng CSS Hover cho Card */}
+                      <Card
+                        sx={{
+                          width: '250px',
+                          position: 'relative', // Quan trọng: Thiết lập vị trí tương đối
+                          overflow: 'hidden', // Quan trọng: Đảm bảo ảnh/overlay nằm trong Card
+                          cursor: 'pointer',
+
+                          // 1. Quy tắc Hover
+                          '&:hover': {
+                            // Khi hover lên Card, chúng ta thay đổi trạng thái của CardMedia
+                            ['& .MuiCardMedia-root']: {
+                              // Hiệu ứng tối ảnh bằng filter: brightness
+                              filter: 'brightness(50%)',
+                              transition: 'filter 0.2s ease-in-out'
+                            }
+                          },
+
+                          // 2. Quy tắc mặc định cho CardMedia
+                          ['& .MuiCardMedia-root']: {
+                            filter: 'brightness(100%)', // Đảm bảo độ sáng ban đầu
+                            transition: 'filter 0.2s ease-in-out' // Hiệu ứng chuyển đổi
+                          }
+
+                        }}
+                      >
+                        <CardMedia
+                          component="img"
+                          height="100"
+                          sx={{
+                            bgcolor: (theme) => (b?.theme?.type === 'default') ? (theme.palette.mode === 'dark' ? '#2c3e50' : '#1565c0') : 'none',
+                            backgroundImage: (b?.theme?.type === 'default') ? 'none' : (b.theme?.value)
+                          }}
+                        />
+
+                        {/* Card Content giữ nguyên */}
+                        <CardContent sx={{ p: 1, '&:last-child': { p: 1 } }}>
+                          <Typography gutterBottom variant="h6" component="div" sx={{ fontSize: '20px' }}>
+                            {b?.title}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Box>
                   </Grid>
                 )}
               </Grid>

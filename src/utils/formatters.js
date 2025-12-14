@@ -33,3 +33,36 @@ export const interceptorLoadingElements = (calling) => {
   }
 }
 
+export const gradientThemes = [
+  {
+    id: 1,
+    type: 'gardient',
+    value: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);'
+  },
+  {
+    id: 2,
+    type: 'gradient',
+    value: 'linear-gradient(to right, #fa709a 0%, #fee140 100%);'
+  },
+  {
+    id: 3,
+    type: 'gradient',
+    value: 'linear-gradient(to right, #74ebd5 0%, #9face6 100%);'
+  },
+  {
+    id: 4,
+    type: 'gradient',
+    value: 'linear-gradient(90deg, #3F2B96 0%, #A8C0FF 100%)'
+  },
+  {
+    id: 5,
+    type: 'gradient',
+    value: 'linear-gradient(90deg, #FC466B 0%, #3F5EFB 100%)'
+  },
+  {
+    id: 6,
+    type: 'gradient',
+    value: 'linear-gradient(to right, #3ab5b0 0%, #3d99be 31%, #56317a 100%);'
+  }
+]
+

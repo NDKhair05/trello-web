@@ -18,9 +18,10 @@ import Notifications from './Notifications/Notifications'
 import AutoCompleteSearchBoard from './SearchBoards/AutoCompleteSearchBoard'
 
 
-function AppBar() {
+function AppBar({ status, board }) {
   return (
     <Box sx={{
+      position: 'relative',
       width: '100%',
       height: (theme) => theme.trello.appBarHeight,
       display: 'flex',
@@ -29,10 +30,23 @@ function AppBar() {
       gap: 2,
       paddingX: 2,
       overflowX: 'auto',
-      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#2c3e50' : '#1565c0'),
+      zIndex: 2,
+      bgcolor: (theme) => ( status === 'default' || board?.theme?.type === 'default' ? (theme.palette.mode === 'dark' ? '#2c3e50' : '#1565c0') : 'none'),
+      backgroundImage: ( status === 'inBoard' ? ( board?.theme?.value ) : 'none' ),
+      // Lớp phủ overlay
+      '&::before': (board?.theme?.type === 'default' || status === 'default')
+        ? {}
+        : {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          transition: '0.25s',
+          zIndex: 0
+        },
       '&::-webkit-scrollbar-track': { m : 2 }
     }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 1 }}>
 
         <Link to="/boards">
           <Tooltip title="Board List">
@@ -54,7 +68,7 @@ function AppBar() {
           <Button sx={{ color: 'white' }} startIcon={<LibraryAddIcon />}>Create</Button>
         </Box>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 2 }}>
 
         {/* Tìm kiếm nhanh một hoặc nhiều cái Board */}
         <AutoCompleteSearchBoard />

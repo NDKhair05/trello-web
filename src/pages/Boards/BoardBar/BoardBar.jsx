@@ -9,6 +9,7 @@ import { Tooltip } from '@mui/material'
 import { capitalizeFirstLetter } from '~/utils/formatters'
 import BoardUserGroup from './BoardUserGroup'
 import InviteBoardUser from './InviteBoardUser'
+import Workspaces from '~/components/AppBar/Menus/Workspaces'
 
 const MENU_STYLES = {
   color: 'white',
@@ -35,7 +36,9 @@ function BoardBar({ board }) {
       gap: 2,
       paddingX: 2,
       overflowX: 'auto',
-      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#1976d2'),
+      bgcolor: (theme) => (board?.theme?.type === 'default' ? (theme.palette.mode === 'dark' ? '#34495e' : '#1976d2') : ''),
+      backgroundImage: board?.theme?.type === 'gradient' ? board?.theme?.value : '',
+
       '&::-webkit-scrollbar-track': { m : 2 }
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -70,7 +73,8 @@ function BoardBar({ board }) {
           icon={<FilterListIcon />}
           label="Filters"
           clickable
-        />
+        /><Workspaces/>
+
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         {/** Xử lí mời user vào làm thành viên của board */}

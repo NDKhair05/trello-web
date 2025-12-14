@@ -10,13 +10,13 @@ import Chip from '@mui/material/Chip'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Divider from '@mui/material/Divider'
-import GroupAddIcon from '@mui/icons-material/GroupAdd'
+import Avatar from '@mui/material/Avatar'
 import DoneIcon from '@mui/icons-material/Done'
 import NotInterestedIcon from '@mui/icons-material/NotInterested'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import IconButton from '@mui/material/IconButton'
-import HowToReg from '@mui/icons-material/HowToReg'
-import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled'
+// import HowToReg from '@mui/icons-material/HowToReg'
+// import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   addNotification,
@@ -167,7 +167,7 @@ function Notifications() {
                            <Box sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
                              {/* Nội dung của thông báo */}
                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                               <Box><GroupAddIcon fontSize="small" /></Box>
+                               <Box><Avatar src={notification.inviter?.avatar} /></Box>
                                <Box><strong>{notification.inviter?.displayName}</strong> had invited you to join the board <strong>{notification.board?.title}</strong></Box>
                              </Box>
 
@@ -273,13 +273,13 @@ function Notifications() {
                   {/* Nội dung của thông báo */}
                   {notification.boardInvitation?.status === BOARD_INVITATION_STATUS.ACCEPTED &&
                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                               <Box><HowToReg fontSize="small" /></Box>
+                               <Box><Avatar src={notification.inviter?.avatar} /></Box>
                                <Box><strong>{notification.inviter?.displayName}</strong> became a member of your <strong>{notification.board?.title}</strong></Box>
                              </Box>
                   }
                   {notification.boardInvitation?.status === BOARD_INVITATION_STATUS.REJECTED &&
                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                               <Box><PersonAddDisabledIcon fontSize="small" /></Box>
+                               <Box><Avatar src={notification.inviter?.avatar} /></Box>
                                <Box><strong>{notification.inviter?.displayName}</strong> had rejected your invitation to <strong>{notification.board?.title}</strong></Box>
                              </Box>
                   }

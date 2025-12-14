@@ -18,6 +18,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import { createNewBoardAPI } from '~/apis'
 
 import { styled } from '@mui/material/styles'
+import ThemeSelector from '~/components/Form/ThemeSelector'
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -49,6 +50,7 @@ function SidebarCreateBoardModal({ afterCreatedNewBoard }) {
   const { control, register, handleSubmit, reset, formState: { errors } } = useForm()
 
   const [isOpen, setIsOpen] = useState(false)
+  const [theme, setTheme] = useState({})
   const handleOpenModal = () => setIsOpen(true)
   const handleCloseModal = () => {
     setIsOpen(false)
@@ -59,7 +61,8 @@ function SidebarCreateBoardModal({ afterCreatedNewBoard }) {
 
   const submitCreateNewBoard = (data) => {
     // const { title, description, type } = data
-    createNewBoardAPI(data).then(() => {
+    const d = { ...data, theme }
+    createNewBoardAPI(d).then(() => {
       handleCloseModal()
       afterCreatedNewBoard()
     })
@@ -188,6 +191,11 @@ function SidebarCreateBoardModal({ afterCreatedNewBoard }) {
                       />
                     </RadioGroup>
                   )}
+                />
+
+                <ThemeSelector
+                  value = {theme}
+                  onChange = {setTheme}
                 />
 
                 <Box sx={{ alignSelf: 'flex-end' }}>

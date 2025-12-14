@@ -131,7 +131,7 @@ function Board() {
       {/*Modal Active Card, check đóng/mở dựa theo cái State được lưu trong Redux*/}
       <ActiveCard />
       {/** Các thành phần còn lại của Board Details */}
-      <AppBar />
+      <AppBar status='inBoard' board={board} />
       <BoardBar board = {board}/>
       <BoardContent
         board = {board}
