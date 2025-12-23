@@ -8,7 +8,10 @@ let axiosReduxStore
 export const injectStore = mainStore => { axiosReduxStore = mainStore }
 
 //Khởi tạo một đối tượng Axios (authorizedAxiosInstance) mục đích để custom và cấu hình chung cho dự án.
-let authorizedAxiosInstance = axios.create()
+let authorizedAxiosInstance = axios.create({
+  baseURL: 'https://trello-api-ox1d.onrender.com',
+  withCredentials: true
+})
 
 // Thời gian chờ tối đa của 1 request: để 10 phút
 authorizedAxiosInstance.defaults.timeout = 1000 * 60 * 10
