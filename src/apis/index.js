@@ -16,6 +16,12 @@ export const updateBoardDetailsAPI = async (boardId, updateData) => {
   return response.data
 }
 
+export const deleteBoardDetailsAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/boards/${boardId}`)
+  //Lưu ý: authorizedAxiosInstance sẽ trả kết quả về qua property của nó là data
+  return response.data
+}
+
 export const moveCardToDifferentColumnAPI = async (updateData) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/boards/supports/moving-card`, updateData)
   //Lưu ý: authorizedAxiosInstance sẽ trả kết quả về qua property của nó là data

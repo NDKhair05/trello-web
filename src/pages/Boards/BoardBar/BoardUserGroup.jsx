@@ -3,12 +3,16 @@ import Box from '@mui/material/Box'
 import Avatar from '@mui/material/Avatar'
 import Tooltip from '@mui/material/Tooltip'
 import Popover from '@mui/material/Popover'
+import { Badge } from '@mui/material'
+import CrownIcon from '~/assets/CustomIcon/CrownIcon'
+import PersonIcon from '@mui/icons-material/Person'
 
-function BoardUserGroup({ boardUsers = [], limit = 6 }) {
+function BoardUserGroup({ board, limit = 6 }) {
   /**
    * Xử lý Popover để ẩn hoặc hiện toàn bộ user trên một cái popup, tương tự docs để tham khảo ở đây:
    * https://mui.com/material-ui/react-popover/
-   */
+  */
+  const boardUsers = board?.FE_allUsers
   const [anchorPopoverElement, setAnchorPopoverElement] = useState(null)
   const isOpenPopover = Boolean(anchorPopoverElement)
   const popoverId = isOpenPopover ? 'board-all-users-popover' : undefined
@@ -25,11 +29,21 @@ function BoardUserGroup({ boardUsers = [], limit = 6 }) {
         if (index < limit) {
           return (
             <Tooltip title={user?.displayName} key={index}>
-              <Avatar
-                sx={{ width: 34, height: 34, cursor: 'pointer' }}
-                alt={user?.displayName}
-                src={user?.avatar}
-              />
+              <Badge
+                overlap="circular"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                badgeContent= {
+                  (board?.ownerIds.includes(user._id))
+                    ? <CrownIcon sx={{ color: '#FFD700', width: '15px' }} />
+                    : <PersonIcon sx={{ color: '#ffffffed', width: '20px' }} />
+                }
+              >
+                <Avatar
+                  sx={{ width: 34, height: 34, cursor: 'pointer' }}
+                  alt={user?.displayName}
+                  src={user?.avatar}
+                />
+              </Badge>
             </Tooltip>
           )
         }
@@ -71,11 +85,19 @@ function BoardUserGroup({ boardUsers = [], limit = 6 }) {
         <Box sx={{ p: 2, maxWidth: '235px', display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {boardUsers.map((user, index) =>
             <Tooltip title={user?.displayName} key={index}>
-              <Avatar
-                sx={{ width: 34, height: 34, cursor: 'pointer' }}
-                alt={user?.displayName}
-                src={user?.avatar}
-              />
+              <Badge
+                overlap="circular"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                badgeContent={
+                  <CrownIcon fontSize="small" sx={{ color: '#FFD700' }} />
+                }
+              >
+                <Avatar
+                  sx={{ width: 34, height: 34, cursor: 'pointer' }}
+                  alt={user?.displayName}
+                  src={user?.avatar}
+                />
+              </Badge>
             </Tooltip>
           )}
         </Box>

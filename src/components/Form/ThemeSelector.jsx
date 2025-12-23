@@ -2,6 +2,8 @@ import { Box, Grid, Typography, Paper, Divider, Chip } from '@mui/material'
 import { gradientThemes } from '~/utils/formatters'
 
 export default function ThemeSelector({ value, onChange }) {
+  // loại bỏ theme default
+  const themeSelection = gradientThemes.slice(1)
   return (
     <Box sx={{ mb: 1.5 }} >
       <Typography variant="subtitle1" sx={{ mb: 3 }}>
@@ -9,7 +11,7 @@ export default function ThemeSelector({ value, onChange }) {
       </Typography>
 
       <Grid container spacing={{ xs: 2, md: 2.5 }} columns={{ xs: 4, sm: 8, md: 12 }} sx={{ justifyContent: 'center', alignItems: 'center' }}>
-        {gradientThemes.map(theme => (
+        {themeSelection.map(theme => (
           <Grid item key={theme.id} size={{ xs: 2, sm: 4, md: 4 }}>
             <Paper
               onClick={() => value.id === theme.id ? onChange({}) : onChange(theme) }

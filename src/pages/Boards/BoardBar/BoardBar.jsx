@@ -9,7 +9,7 @@ import { Tooltip } from '@mui/material'
 import { capitalizeFirstLetter } from '~/utils/formatters'
 import BoardUserGroup from './BoardUserGroup'
 import InviteBoardUser from './InviteBoardUser'
-import Workspaces from '~/components/AppBar/Menus/Workspaces'
+import SettingBoard from './SettingBoard'
 
 const MENU_STYLES = {
   color: 'white',
@@ -73,15 +73,16 @@ function BoardBar({ board }) {
           icon={<FilterListIcon />}
           label="Filters"
           clickable
-        /><Workspaces/>
+        />
 
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <SettingBoard board = {board}/>
         {/** Xử lí mời user vào làm thành viên của board */}
         <InviteBoardUser boardId={board._id} />
 
         {/** Xử lí hiển thị danh sách thành viên của board */}
-        <BoardUserGroup boardUsers={board?.FE_allUsers} />
+        <BoardUserGroup board={board} />
       </Box>
     </Box>
   )

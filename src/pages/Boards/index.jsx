@@ -148,7 +148,7 @@ function Boards() {
             {/* Trường hợp gọi API và có ownerBoards trong Database trả về thì render danh sách ownerBoards */}
             {ownerBoards?.length > 0 &&
               <Grid container spacing={2}>
-                {boards.map(b =>
+                {ownerBoards.map(b =>
                   <Grid xs={2} sm={3} md={4} key={b._id}>
                     <Box
                       component={Link}

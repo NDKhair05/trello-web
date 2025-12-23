@@ -35,8 +35,13 @@ export const interceptorLoadingElements = (calling) => {
 
 export const gradientThemes = [
   {
+    id: 0,
+    type: 'default',
+    value: 'default'
+  },
+  {
     id: 1,
-    type: 'gardient',
+    type: 'gradient',
     value: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);'
   },
   {
