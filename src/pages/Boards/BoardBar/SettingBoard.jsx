@@ -23,15 +23,20 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import RemoveIcon from '@mui/icons-material/Remove'
+import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import ThemeSetting from './SettingBoardComponents/ThemeSetting'
-import { deleteBoardDetailsAPI } from '~/apis'
+import { deleteBoardDetailsAPI, leaveFromBoardAPI } from '~/apis'
 import { useConfirm } from 'material-ui-confirm'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { selectCurrentUser } from '~/redux/user/userSlice'
+import { socketIoInstance } from '~/sockeClient'
 
 function SettingBoard({ board }) {
   const [open, setOpen] = React.useState(false)
   const navigate = useNavigate()
+  const currentUser = useSelector(selectCurrentUser)
 
   const toggleDrawer = (newOpen) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -55,6 +60,29 @@ function SettingBoard({ board }) {
       deleteBoardDetailsAPI(boardId)
         .then(res => {
           toast.success(res?.deleteResult)
+          navigate('/boards')
+        })
+    })
+  }
+
+  const handleClickLeaveBoard = () => {
+    confirmDeleteBoard({
+      title: 'Leave this Board?',
+      description: 'You may not do anything in this board anymore. Are you sure?',
+      // allowClose: false,
+      // dialogProps: { maxWidth: 'xs' },
+      // cancellationButtonProps: { color:'inherit' },
+      // confirmationButtonProps: { color: 'secondary', variant: 'outlined' },
+      confirmationText: 'Confirm',
+      cancellationText: 'Cancel'
+    }).then(() => {
+      leaveFromBoardAPI({
+        boardId: board._id,
+        userId : currentUser._id
+      })
+        .then(res => {
+          socketIoInstance.emit('FE_UPDATE_ACTIVE_BOARD', board)
+          toast.success(res?.leaveResult)
           navigate('/boards')
         })
     })
@@ -211,12 +239,22 @@ function SettingBoard({ board }) {
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton onClick={handleClickDeleteBoard} >
-            <ListItemIcon>
-              <RemoveIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Delete board</ListItemText>
-          </ListItemButton>
+          {(board?.ownerIds?.includes(currentUser._id))
+            ? //Nếu là owner thì có thể xóa
+            <ListItemButton onClick={handleClickDeleteBoard} >
+              <ListItemIcon>
+                <RemoveIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Delete board</ListItemText>
+            </ListItemButton>
+            : // Nếu là member thì chỉ có thể rời board, ko thể xóa
+            <ListItemButton onClick={handleClickLeaveBoard} >
+              <ListItemIcon>
+                <ExitToAppIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Leave board</ListItemText>
+            </ListItemButton>
+          }
         </ListItem>
       </List>
     </Box>

@@ -24,6 +24,7 @@ import { fetchBoardsAPI } from '~/apis'
 import { DEFAULT_PAGE, DEFAULT_ITEMS_PER_PAGE } from '~/utils/constants'
 import { useSelector } from 'react-redux'
 import { selectCurrentUser } from '~/redux/user/userSlice'
+import { selectCurrentNotifications } from '~/redux/notifications/notificationsSlice'
 // Styles của mấy cái Sidebar item menu, anh gom lại ra đây cho gọn.
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -44,6 +45,8 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 
 function Boards() {
   const user = useSelector(selectCurrentUser)
+  const notifications = useSelector(selectCurrentNotifications)
+
   // Số lượng bản ghi boards hiển thị tối đa trên 1 page tùy dự án (thường sẽ là 12 cái)
   const [boards, setBoards] = useState(null)
   // Tổng toàn bộ số lượng bản ghi boards có trong Database mà phía BE trả về để FE dùng tính toán phân trang
@@ -114,7 +117,7 @@ function Boards() {
 
   return (
     <Container disableGutters maxWidth={false}>
-      <AppBar status='default' />
+      <AppBar status='default' notifications={notifications} />
       <Box sx={{ paddingX: 2, my: 4 }}>
         <Grid container spacing={2}>
           <Grid xs={12} sm={3}>

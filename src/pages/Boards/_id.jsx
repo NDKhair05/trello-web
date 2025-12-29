@@ -23,12 +23,14 @@ import {
 } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoInstance } from '~/sockeClient'
 import { selectCurrentUser } from '~/redux/user/userSlice'
+import { selectCurrentNotifications } from '~/redux/notifications/notificationsSlice'
 
 function Board() {
   const dispatch = useDispatch()
   // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
   const currentUser = useSelector(selectCurrentUser)
+  const notifications = useSelector(selectCurrentNotifications)
 
   const { boardId } = useParams()
 
@@ -131,7 +133,7 @@ function Board() {
       {/*Modal Active Card, check đóng/mở dựa theo cái State được lưu trong Redux*/}
       <ActiveCard />
       {/** Các thành phần còn lại của Board Details */}
-      <AppBar status='inBoard' board={board} />
+      <AppBar status='inBoard' board={board} notifications={notifications} />
       <BoardBar board = {board}/>
       <BoardContent
         board = {board}

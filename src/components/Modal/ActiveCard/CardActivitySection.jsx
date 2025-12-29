@@ -7,17 +7,17 @@ import Tooltip from '@mui/material/Tooltip'
 
 import { useSelector } from 'react-redux'
 import { selectCurrentUser } from '~/redux/user/userSlice'
-import { selectCurrentActiveCard } from '~/redux/acitveCard/activeCardSlice'
 
 function CardActivitySection({ cardComments = [], onAddCardComment }) {
   const currentUser = useSelector(selectCurrentUser)
-  const currentActiveCard = useSelector(selectCurrentActiveCard)
+  // const currentActiveCard = useSelector(selectCurrentActiveCard)
 
   const handleAddCardComment = (event) => {
     // Bắt hành động người dùng nhấn phím Enter && không phải hành động Shift + Enter
     if (event.key === 'Enter' && !event.shiftKey) {
+      const value = event?.target?.value.trim()
       event.preventDefault() // Thêm dòng này để khi Enter không bị nhảy dòng
-      if (!event.target?.value) return // Nếu không có giá trị gì thì return không làm gì cả
+      if (!event.target?.value || !value ) return // Nếu không có giá trị gì thì return không làm gì cả
       // Tạo một biến commend data để gửi api
       const commentToAdd = {
         userAvatar: currentUser?.avatar,

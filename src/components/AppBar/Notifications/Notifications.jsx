@@ -15,13 +15,15 @@ import DoneIcon from '@mui/icons-material/Done'
 import NotInterestedIcon from '@mui/icons-material/NotInterested'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import IconButton from '@mui/material/IconButton'
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1'
+import GroupsIcon from '@mui/icons-material/Groups'
+import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled'
 // import HowToReg from '@mui/icons-material/HowToReg'
 // import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   addNotification,
   fetchAllNotificationsAPI,
-  selectCurrentNotifications,
   updateBoardInvitationAPI,
   updateCurrentNotifications
 } from '~/redux/notifications/notificationsSlice'
@@ -39,7 +41,7 @@ const BOARD_INVITATION_STATUS = {
 }
 
 
-function Notifications() {
+function Notifications({ notifications }) {
   const navigate = useNavigate()
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
@@ -61,7 +63,6 @@ function Notifications() {
   const currentUser = useSelector(selectCurrentUser)
 
   // Lấy dữ liệu notification từ trong Redux
-  const notifications = useSelector(selectCurrentNotifications)
 
   // Fetch danh sách các lời mời invitations
   const dispatch = useDispatch()
@@ -79,6 +80,7 @@ function Notifications() {
       if (notification.inviteeId === currentUser._id) {
         dispatch(addNotification(notification))
         setNewNotification(true)
+        dispatch(fetchAllNotificationsAPI())
       }
     }
     // Lắng nghe cái sự kiện real-time có tên là 'BE_USER_INVITED_TO_BOARD' từ phía server gửi về
@@ -167,7 +169,25 @@ function Notifications() {
                            <Box sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
                              {/* Nội dung của thông báo */}
                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                               <Box><Avatar src={notification.inviter?.avatar} /></Box>
+                               <Box>
+                                 <Badge
+                                   sx={{ mr:1 }}
+                                   overlap="circular"
+                                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                   badgeContent={
+                                     <PersonAddAlt1Icon sx={{
+                                       p:'3px',
+                                       background: 'green',
+                                       color: 'white',
+                                       width: '25px',
+                                       height: '25px',
+                                       borderRadius: '20px'
+                                     }}/>
+                                   }
+                                 >
+                                   <Avatar src={notification.inviter?.avatar}/>
+                                 </Badge>
+                               </Box>
                                <Box><strong>{notification.inviter?.displayName}</strong> had invited you to join the board <strong>{notification.board?.title}</strong></Box>
                              </Box>
 
@@ -273,14 +293,50 @@ function Notifications() {
                   {/* Nội dung của thông báo */}
                   {notification.boardInvitation?.status === BOARD_INVITATION_STATUS.ACCEPTED &&
                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                               <Box><Avatar src={notification.inviter?.avatar} /></Box>
+                               <Box>
+                                 <Badge
+                                   sx={{ mr: 1 }}
+                                   overlap="circular"
+                                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                   badgeContent={
+                                     <GroupsIcon sx={{
+                                       p:'3px',
+                                       background: 'green',
+                                       color: 'white',
+                                       width: '25px',
+                                       height: '25px',
+                                       borderRadius: '20px'
+                                     }} />
+                                   }
+                                 >
+                                   <Avatar src={notification.inviter?.avatar} />
+                                 </Badge>
+                               </Box>
                                <Box><strong>{notification.inviter?.displayName}</strong> became a member of your <strong>{notification.board?.title}</strong></Box>
                              </Box>
                   }
                   {notification.boardInvitation?.status === BOARD_INVITATION_STATUS.REJECTED &&
                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                               <Box><Avatar src={notification.inviter?.avatar} /></Box>
-                               <Box><strong>{notification.inviter?.displayName}</strong> had rejected your invitation to <strong>{notification.board?.title}</strong></Box>
+                               <Box>
+                                 <Badge
+                                   sx={{ mr: 1 }}
+                                   overlap="circular"
+                                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                   badgeContent={
+                                     <PersonAddDisabledIcon sx={{
+                                       p:'3px',
+                                       background: 'red',
+                                       color: 'white',
+                                       width: '25px',
+                                       height: '25px',
+                                       borderRadius: '20px'
+                                     }} />
+                                   }
+                                 >
+                                   <Avatar src={notification.inviter?.avatar} />
+                                 </Badge>
+                               </Box>
+                               <Box><strong>{notification.inviter.displayName}</strong> had rejected your invitation to <strong>{notification.board?.title}</strong></Box>
                              </Box>
                   }
 

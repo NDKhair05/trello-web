@@ -18,7 +18,7 @@ import Notifications from './Notifications/Notifications'
 import AutoCompleteSearchBoard from './SearchBoards/AutoCompleteSearchBoard'
 
 
-function AppBar({ status, board }) {
+function AppBar({ status, board, notifications }) {
   return (
     <Box sx={{
       position: 'relative',
@@ -77,7 +77,7 @@ function AppBar({ status, board }) {
         <ModeSelect />
 
         {/* Xử lý phần hiển thị thông báo */}
-        <Notifications />
+        <Notifications notifications={notifications} />
 
         <Tooltip title="Help">
           <HelpOutlineIcon sx={{ cursor: 'pointer', color: 'white' }}/>

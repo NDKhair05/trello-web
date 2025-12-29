@@ -99,6 +99,11 @@ export const inviteUserToBoardAPI = async (data) => {
   return response.data
 }
 
+export const leaveFromBoardAPI = async (data) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/boards/leave`, data)
+  return response.data
+}
+
 export const addNotificationAPI = async (data) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/notifications`, data)
   return response.data
