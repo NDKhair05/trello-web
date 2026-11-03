@@ -18,12 +18,12 @@ function ToggleFocusInput({ value: valueProp = '', onChangedValue, inputFontSize
     setInputValue(inputValue.trim())
 
     // Nếu giá trị không có gì thay đổi hoặc Nếu user xóa hết nội dung thì set lại giá trị gốc ban đầu theo value từ props và return luôn không làm gì thêm
-    if (!inputValue || inputValue.trim() === valueProp) {
+    if (!inputValue.trim() || inputValue.trim() === valueProp) {
       setInputValue(valueProp)
       return
     }
     // Khi giá trị có thay đổi ok thì gọi lên func ở Props cha để xử lý
-    onChangedValue(inputValue)
+    onChangedValue(inputValue.trim())
   }
 
   return (

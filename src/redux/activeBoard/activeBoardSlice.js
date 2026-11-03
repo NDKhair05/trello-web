@@ -1,99 +1,37 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { createAsyncThunk } from '@reduxjs/toolkit'
-import authorizedAxiosInstance from '~/utils/authorizeAxios'
-import { API_ROOT } from '~/utils/constants'
-import { generatePlaceholderCard } from '~/utils/formatters'
-import { mapOrder } from '~/utils/sorts'
-import { isEmpty } from 'lodash'
-import { socketIoInstance } from '~/sockeClient'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { fetchBoardDetails } from '~/apis/boardApi'
 
-//Khởi tạo giá trị State của một cái Slice trong redux
-const initialState = {
-  currentActiveBoard: null
-}
-
-//Các hành động gọi api (bất đồng bộ) và cập nhật dữ liệu vào Redux, dùng Middleware createAsyncThunk đi kèm với extraReducers
-export const fetchBoardDetailsAPI = createAsyncThunk(
-  'activeBoard/fetchBoardDetailsAPI',
-  async (boardId) => {
-    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/${boardId}`)
-    //Lưu ý: authorizedAxiosInstance sẽ trả kết quả về qua property của nó là data
-    return response.data
-  }
-)
-
-//Khởi tạo một cái Slice trong kho lưu trữ - Redux Store
-export const activeBoardSlice = createSlice({
+export const fetchBoardDetailsAPI = createAsyncThunk('activeBoard/fetch', fetchBoardDetails)
+const slice = createSlice({
   name: 'activeBoard',
-  initialState,
-  //Reducers: Nơi xử lí dữ liệu đồng bộ
+  initialState: { currentActiveBoard: null, loading: false, error: null, requestId: null },
   reducers: {
-    updateCurrentActiveBoard: (state, action) => {
-      //action.payload là chuẩn đặt tên nhận dữ liệu vào reducer, ở đây chúng ta gán nó ra một biến có nghĩa hơn
-      let board = action.payload
-
-      //Xử lí dữ liệu nếu cần thiết...
-      socketIoInstance.emit('FE_UPDATE_ACTIVE_BOARD', board)
-
-      //Update lại dữ liệu của cái currentActiveBoard
-      state.currentActiveBoard = board
-    },
-    updateCardInBoard: (state, action) => {
-      // Update nested card
-      //https://redux-toolkit.js.org/usage/immer-reducers#updating-nested-data
-      const incomingCard = action.payload
-
-      const column = state.currentActiveBoard.columns.find(i => i._id === incomingCard.columnId )
-      if (column) {
-        const card = column.cards.find(i => i._id === incomingCard._id)
-        if (card) {
-          // card.title = incomingCard.title
-          // card['title'] = incomingCard['title']
-
-          /** Dùng object keys để lấy được các key của card incoming sau đó gán cho card hiện tại trong activeBoard hiện tại để update*/
-          Object.keys(incomingCard).forEach(key => {
-            card[key] = incomingCard[key]
-          })
-        }
-      }
+    updateCurrentActiveBoard: (state, { payload }) => { state.currentActiveBoard = payload },
+    updateCardInBoard: (state, { payload }) => {
+      const column = state.currentActiveBoard?.columns.find(c => c._id === payload.columnId)
+      const card = column?.cards.find(c => c._id === payload._id)
+      if (card) Object.assign(card, payload)
     }
   },
-  //ExtraReducers: Nơi xử lí dữ liệu bất đồng bộ
-  extraReducers: (builder) => {
+  extraReducers: builder => {
+    builder.addCase(fetchBoardDetailsAPI.pending, (state, action) => {
+      state.loading = true
+      state.error = null
+      state.requestId = action.meta.requestId
+      if (state.currentActiveBoard?._id !== action.meta.arg) state.currentActiveBoard = null
+    })
     builder.addCase(fetchBoardDetailsAPI.fulfilled, (state, action) => {
-      //action.payload ở đây chính là response.data ở trên trả về
-      let board = action.payload
-
-      // Thành viên trong cái board sẽ là gộp lại của 2 mảng ownerIds và memberIds
-      board.FE_allUsers = board.owners.concat(board.members)
-
-      //Sắp xếp thứ tự các các column luôn ở đây trước khi đưa dữ liệu xuống bên dưới các component con
-      board.columns = mapOrder(board.columns, board.columnOrderIds, '_id')
-
-      //Cần xử lí vấn đề kéo thả 1 Column rỗng
-      board.columns.forEach(column => {
-        if (isEmpty(column.cards)) {
-          column.cards = [generatePlaceholderCard(column)]
-          column.cardOrderIds = [generatePlaceholderCard(column)._id]
-        } else {
-          //Sắp xếp thứ tự các các card luôn ở đây trước khi đưa dữ liệu xuống bên dưới các component con
-          column.cards = mapOrder(column?.cards, column?.cardOrderIds, '_id')
-        }
-      })
-
-      //Update lại dữ liệu của cái currentActiveBoard
-      state.currentActiveBoard = board
-
+      if (state.requestId !== action.meta.requestId) return
+      state.currentActiveBoard = action.payload
+      state.loading = false
+    })
+    builder.addCase(fetchBoardDetailsAPI.rejected, (state, action) => {
+      if (state.requestId !== action.meta.requestId) return
+      state.loading = false
+      state.error = action.error.message
     })
   }
 })
-
-// Actions: Là nơi dành cho các components bên dưới gọi bằng dispatch() tới nó để cập nhật lại dữ liệu thông qua reducer (chạy đồng bộ)
-export const { updateCurrentActiveBoard, updateCardInBoard } = activeBoardSlice.actions
-
-//Selectors: Là nơi dành cho các components bên dưới gọi bằng hook useSelector() để lấy dữ liệu từ trong kho redux store ra sử dụng
-export const selectCurrentActiveBoard = (state) => {
-  return state.activeBoard.currentActiveBoard
-}
-
-export const activeBoardReducer = activeBoardSlice.reducer
+export const { updateCurrentActiveBoard, updateCardInBoard } = slice.actions
+export const selectCurrentActiveBoard = state => state.activeBoard.currentActiveBoard
+export const activeBoardReducer = slice.reducer

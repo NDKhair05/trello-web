@@ -1,136 +1,35 @@
-// TrungQuanDev: https://youtube.com/@trungquandev
-import { Link, useNavigate } from 'react-router-dom'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Avatar from '@mui/material/Avatar'
-import LockIcon from '@mui/icons-material/Lock'
-import Typography from '@mui/material/Typography'
-import { Card as MuiCard } from '@mui/material'
-import { ReactComponent as TrelloIcon } from '~/assets/trello.svg'
-import CardActions from '@mui/material/CardActions'
-import TextField from '@mui/material/TextField'
-import Zoom from '@mui/material/Zoom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Alert, Box, Button, Card, TextField, Typography } from '@mui/material'
 import { useForm } from 'react-hook-form'
-import {
-  EMAIL_RULE,
-  PASSWORD_RULE,
-  EMAIL_RULE_MESSAGE,
-  PASSWORD_RULE_MESSAGE,
-  FIELD_REQUIRED_MESSAGE,
-  PASSWORD_CONFIRMATION_MESSAGE
-} from '~/utils/validators'
-import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
 import { registerUserAPI } from '~/apis'
-import { toast } from 'react-toastify'
+import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
 
 function RegisterForm() {
-
-  const { register, handleSubmit, formState : { errors }, watch } = useForm()
-
-  const navigate = useNavigate()
-  const submitRegister = (data) => {
-    const { email, password } = data
-    toast.promise(registerUserAPI({ email, password }),
-      { pending: 'Registration is in progress...' }
-    ).then(user => {
-      navigate(`/login?registeredEmail=${user.email}`)
-    })
+  const [error, setError] = useState('')
+  const [registered, setRegistered] = useState(false)
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm()
+  const submit = async data => {
+    setError('')
+    try {
+      const result = await registerUserAPI(data)
+      setRegistered(result.requiresConfirmation)
+    } catch (err) { setError(err.message || 'Registration failed.') }
   }
-
   return (
-    <form onSubmit={handleSubmit(submitRegister)}>
-      <Zoom in={true} style={{ transitionDelay: '200ms' }}>
-        <MuiCard sx={{ minWidth: 380, maxWidth: 380, marginTop: '6em' }}>
-          <Box sx={{
-            margin: '1em',
-            display: 'flex',
-            justifyContent: 'center',
-            gap: 1
-          }}>
-            <Avatar sx={{ bgcolor: 'primary.main' }}><LockIcon /></Avatar>
-            <Avatar sx={{ bgcolor: 'primary.main' }}><TrelloIcon /></Avatar>
-          </Box>
-          <Box sx={{ marginTop: '1em', display: 'flex', justifyContent: 'center', color: theme => theme.palette.grey[500] }}>
-            Author: Nguyen Khai
-          </Box>
-          <Box sx={{ padding: '0 1em 1em 1em' }}>
-            <Box sx={{ marginTop: '1em' }}>
-              <TextField
-                // autoComplete="nope"
-                autoFocus
-                fullWidth
-                label="Enter Email..."
-                type="text"
-                variant="outlined"
-                error={!!errors['email']}
-                {...register('email', {
-                  required: FIELD_REQUIRED_MESSAGE,
-                  pattern: {
-                    value: EMAIL_RULE,
-                    message: EMAIL_RULE_MESSAGE
-                  }
-                })}
-              />
-              <FieldErrorAlert errors={errors} fieldName={'email'} />
-            </Box>
-
-            <Box sx={{ marginTop: '1em' }}>
-              <TextField
-                fullWidth
-                label="Enter Password..."
-                type="password"
-                variant="outlined"
-                error={!!errors['password']}
-                {...register('password', {
-                  required: FIELD_REQUIRED_MESSAGE,
-                  pattern: {
-                    value: PASSWORD_RULE,
-                    message: PASSWORD_RULE_MESSAGE
-                  }
-                })}
-              />
-              <FieldErrorAlert errors={errors} fieldName={'password'} />
-            </Box>
-
-            <Box sx={{ marginTop: '1em' }}>
-              <TextField
-                fullWidth
-                label="Enter Password Confirmation..."
-                type="password"
-                variant="outlined"
-                error={!!errors['password_confirmation']}
-                {...register('password_confirmation', {
-                  validate: (value) => {
-                    if (value === watch('password')) return true
-                    return PASSWORD_CONFIRMATION_MESSAGE
-                  }
-                })}
-              />
-              <FieldErrorAlert errors={errors} fieldName={'password_confirmation'} />
-            </Box>
-          </Box>
-          <CardActions sx={{ padding: '0 1em 1em 1em' }}>
-            <Button
-              className="interceptor-loading"
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-            >
-              Register
-            </Button>
-          </CardActions>
-          <Box sx={{ padding: '0 1em 1em 1em', textAlign: 'center' }}>
-            <Typography>Already have an account?</Typography>
-            <Link to="/login" style={{ textDecoration: 'none' }}>
-              <Typography sx={{ color: 'primary.main', '&:hover': { color: '#ffbb39' } }}>Log in!</Typography>
-            </Link>
-          </Box>
-        </MuiCard>
-      </Zoom>
-    </form>
+    <Card component='form' onSubmit={handleSubmit(submit)} sx={{ p: 3, mt: 8, width: 'min(400px, 92vw)' }}>
+      <Typography variant='h5' gutterBottom>Create account</Typography>
+      {error && <Alert severity='error' sx={{ mb: 2 }}>{error}</Alert>}
+      {registered && <Alert severity='info' sx={{ mb: 2 }}>If registration is eligible, a confirmation email will arrive. Check your inbox, then sign in.</Alert>}
+      <TextField autoFocus fullWidth label='Email' type='email' autoComplete='email' {...register('email', { required: 'Email is required.' })} error={!!errors.email} />
+      <FieldErrorAlert errors={errors} fieldName='email' />
+      <TextField fullWidth sx={{ mt: 2 }} label='Password' type='password' autoComplete='new-password' {...register('password', { required: 'Password is required.', minLength: { value: 8, message: 'Use at least 8 characters.' } })} error={!!errors.password} />
+      <FieldErrorAlert errors={errors} fieldName='password' />
+      <TextField fullWidth sx={{ mt: 2 }} label='Confirm password' type='password' autoComplete='new-password' {...register('confirmation', { validate: value => value === watch('password') || 'Passwords do not match.' })} error={!!errors.confirmation} />
+      <FieldErrorAlert errors={errors} fieldName='confirmation' />
+      <Button fullWidth type='submit' variant='contained' disabled={isSubmitting} sx={{ my: 2 }}>{isSubmitting ? 'Registering...' : 'Register'}</Button>
+      <Box sx={{ textAlign: 'center' }}><Link to='/login'>Back to login</Link></Box>
+    </Card>
   )
 }
-
 export default RegisterForm

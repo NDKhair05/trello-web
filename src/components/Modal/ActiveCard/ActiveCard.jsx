@@ -1,383 +1,56 @@
-import Box from '@mui/material/Box'
-import Modal from '@mui/material/Modal'
-import Typography from '@mui/material/Typography'
-import CreditCardIcon from '@mui/icons-material/CreditCard'
-import CancelIcon from '@mui/icons-material/Cancel'
-import Grid from '@mui/material/Unstable_Grid2'
-import Stack from '@mui/material/Stack'
-import Divider from '@mui/material/Divider'
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
-import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
-import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
-import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
-import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined'
-import AutoFixHighOutlinedIcon from '@mui/icons-material/AutoFixHighOutlined'
-import AspectRatioOutlinedIcon from '@mui/icons-material/AspectRatioOutlined'
-import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined'
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
-import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
-import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined'
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
-import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
-import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
-
-import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
-import VisuallyHiddenInput from '~/components/Form/VisuallyHiddenInput'
-import { singleFileValidator } from '~/utils/validators'
-import { toast } from 'react-toastify'
-import CardUserGroup from './CardUserGroup'
-import CardDescriptionMdEditor from './CardDescriptionMdEditor'
-import CardActivitySection from './CardActivitySection'
+import { useEffect, useState } from 'react'
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  clearAndHideCurrentActiveCard,
-  selectCurrentActiveCard,
-  updateCurrentAcitveCard,
-  selectIsShowModalActiveCard
-} from '~/redux/acitveCard/activeCardSlice'
-
-import { styled } from '@mui/material/styles'
-import { deleteCardDetailsAPI, updateCardDetailsAPI } from '~/apis'
-import { selectCurrentActiveBoard, updateCardInBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
-import { selectCurrentUser } from '~/redux/user/userSlice'
-import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 import { useConfirm } from 'material-ui-confirm'
-import { cloneDeep } from 'lodash'
-import { socketIoInstance } from '~/sockeClient'
-import { useEffect } from 'react'
-import CardLabel from './CardLabelModal'
+import { clearAndHideCurrentActiveCard, selectCurrentActiveCard, selectIsShowModalActiveCard } from '~/redux/acitveCard/activeCardSlice'
+import { fetchBoardDetailsAPI, selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { deleteCardDetailsAPI, updateCardDetailsAPI } from '~/apis'
 
-const SidebarItem = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
-  cursor: 'pointer',
-  fontSize: '14px',
-  fontWeight: '600',
-  color: theme.palette.mode === 'dark' ? '#90caf9' : '#172b4d',
-  backgroundColor: theme.palette.mode === 'dark' ? '#2f3542' : '#091e420f',
-  padding: '10px',
-  borderRadius: '4px',
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? '#33485D' : theme.palette.grey[300],
-    '&.active': {
-      color: theme.palette.mode === 'dark' ? '#000000de' : '#0c66e4',
-      backgroundColor: theme.palette.mode === 'dark' ? '#90caf9' : '#e9f2ff'
-    }
-  }
-}))
-
-/**
- * Note: Modal là một low-component mà bọn MUI sử dụng bên trong những thứ như Dialog, Drawer, Menu, Popover. Ở đây dĩ nhiên chúng ta có thể sử dụng Dialog cũng không thành vấn đề gì, nhưng sẽ sử dụng Modal để dễ linh hoạt tùy biến giao diện từ con số 0 cho phù hợp với mọi nhu cầu nhé.
- */
 function ActiveCard() {
   const dispatch = useDispatch()
-  const activeCard = useSelector(selectCurrentActiveCard)
-  const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
-  const currentUser = useSelector(selectCurrentUser)
+  const confirm = useConfirm()
+  const card = useSelector(selectCurrentActiveCard)
+  const open = useSelector(selectIsShowModalActiveCard)
   const board = useSelector(selectCurrentActiveBoard)
-
-  useEffect(() => {
-    if (!activeCard?._id) return
-
-    const updateCurrentActiveCardSocket = (card) => {
-      if (card._id === activeCard._id) {
-        dispatch(updateCurrentAcitveCard(card))
-      }
-    }
-
-    socketIoInstance.on('BE_UPDATE_ACTIVE_CARD', updateCurrentActiveCardSocket)
-
-    return () => {
-      socketIoInstance.off('BE_UPDATE_ACTIVE_CARD', updateCurrentActiveCardSocket)
-    }
-  }, [dispatch, activeCard?._id])
-
-
-  //Không dùng biến state để check đóng mở Modal nữa vì sẽ check theo biến isShowModalActiveCard trong Redux
-  // const [isOpen, setIsOpen] = useState(true)
-  // const handleOpenModal = () => setIsOpen(true)
-  const handleCloseModal = () => {
-    // setIsOpen(false)
-    dispatch(clearAndHideCurrentActiveCard())
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  useEffect(() => { setTitle(card?.title || ''); setDescription(card?.description || ''); setError('') }, [card])
+  const close = () => dispatch(clearAndHideCurrentActiveCard())
+  const save = async event => {
+    event.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await updateCardDetailsAPI(card._id, { title, description })
+      await dispatch(fetchBoardDetailsAPI(board._id)).unwrap()
+      close()
+    } catch (err) { setError(err.message) }
+    finally { setBusy(false) }
   }
-
-  //Function gọi API chung cho các trường hợp update card title, description, cover, comment, ....
-  const callApiUpdateCard = async (updateData) => {
-    const updatedCard = await updateCardDetailsAPI(activeCard._id, updateData)
-
-    //B1: Cập nhật lại cái card đang active trong modal hiện tại
-    dispatch(updateCurrentAcitveCard(updatedCard))
-
-    //B2: Cập nhật lại cái bản ghi card trong cái activeBoard(nested data)
-    dispatch(updateCardInBoard(updatedCard))
-
-    socketIoInstance.emit('FE_UPDATE_ACTIVE_BOARD', board)
-    socketIoInstance.emit('FE_UPDATE_ACTIVE_CARD', updatedCard)
-
-    return updatedCard
+  const remove = async () => {
+    try { await confirm({ title: 'Delete card?', description: 'This action cannot be undone.' }) }
+    catch { return }
+    setBusy(true)
+    setError('')
+    try {
+      await deleteCardDetailsAPI(card._id, board._id)
+      await dispatch(fetchBoardDetailsAPI(board._id)).unwrap()
+      close()
+    } catch (err) { setError(err.message) }
+    finally { setBusy(false) }
   }
-
-  const onUpdateCardTitle = (newTitle) => {
-    callApiUpdateCard({ title: newTitle.trim() })
-  }
-
-  const onUpdateCardDescription = (newDescription) => {
-    callApiUpdateCard({ description: newDescription })
-  }
-
-  const onUploadCardCover = (event) => {
-    const error = singleFileValidator(event.target?.files[0])
-    if (error) {
-      toast.error(error)
-      return
-    }
-    let reqData = new FormData()
-    reqData.append('cardCover', event.target?.files[0])
-
-    // Gọi API...
-    toast.promise(
-      callApiUpdateCard(reqData).finally(() => event.target.value = ''),
-      { pending: 'Updating...' }
-    )
-  }
-
-  const onUpdateCardLabel = async (incomingLabelInfo) => {
-    await callApiUpdateCard({ incomingLabelInfo })
-  }
-
-  const onAddCardComment = async (commentToAdd) => {
-    await callApiUpdateCard({ commentToAdd })
-  }
-
-  const onUpdateCardMembers = async (incomingMemberInfo) => {
-    await callApiUpdateCard({ incomingMemberInfo })
-  }
-
-  const confirmDeleteCard = useConfirm()
-  const handleDeleteCard = () => {
-    confirmDeleteCard({
-      title: 'Delete this Card?',
-      description: 'This action will detele permanently your Card. Are you sure?',
-      // allowClose: false,
-      // dialogProps: { maxWidth: 'xs' },
-      // cancellationButtonProps: { color:'inherit' },
-      confirmationButtonProps: { color: 'warning', variant: 'outlined' },
-      confirmationText: 'Confirm',
-      cancellationText: 'Cancel'
-    })
-      .then(() => {
-        const newBoard = cloneDeep(board)
-        const column = newBoard.columns.find(c => c._id === activeCard.columnId)
-        newBoard.columns.forEach(c => {
-          if (c._id === column._id) {
-            c.cards = column.cards.filter(card => card._id !== activeCard._id),
-            c.cardOrderIds = column.cardOrderIds.filter(_id => _id !== activeCard._id)
-          }
-        })
-
-        //Gọi API xóa một Card
-        deleteCardDetailsAPI(activeCard._id).then(res => {
-          toast.success(res?.deleteResult)
-          handleCloseModal()
-        })
-          .then(() => {
-            dispatch(updateCurrentActiveBoard(newBoard))
-          })
-      })
-      .catch(() => {})
-  }
-
-  return (
-    <Modal
-      disableScrollLock
-      open={isShowModalActiveCard}
-      onClose={handleCloseModal} // Sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
-      sx={{ overflowY: 'auto' }}>
-      <Box sx={{
-        position: 'relative',
-        width: 900,
-        maxWidth: 900,
-        bgcolor: 'white',
-        boxShadow: 24,
-        borderRadius: '8px',
-        border: 'none',
-        outline: 0,
-        padding: '40px 20px 20px',
-        margin: '50px auto',
-        backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1A2027' : '#fff'
-      }}>
-        <Box sx={{
-          position: 'absolute',
-          top: '12px',
-          right: '10px',
-          cursor: 'pointer'
-        }}>
-          <CancelIcon color="error" sx={{ '&:hover': { color: 'error.light' } }} onClick={handleCloseModal} />
-        </Box>
-
-        {activeCard?.cover &&
-        <Box sx={{ mb: 4 }}>
-          <img
-            style={{ width: '100%', height: '320px', borderRadius: '6px', objectFit: 'cover' }}
-            src={activeCard.cover}
-            alt="card-cover"
-          />
-        </Box>
-        }
-
-        <Box sx={{ mb: 1, mt: -3, pr: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CreditCardIcon />
-
-          {/* Feature 01: Xử lý tiêu đề của Card */}
-          <ToggleFocusInput
-            inputFontSize='22px'
-            value={activeCard?.title}
-            onChangedValue={onUpdateCardTitle} />
-        </Box>
-
-        {/*Feature 02: Mảng các nhãn của card*/}
-        {/* {labelColorsDefault &&
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="span" sx={{ fontWeight: '550', fontSize: '14px' }}>Label</Typography>
-            <Grid container spacing={{ xs: 0.5, md: 1 }} sx={{ alignItems: 'center', mt: 1 }}>
-              {labelColorsDefault.map(theme => (
-                <Grid item key={theme.id} >
-                  <Paper
-                    sx={{
-                      position: 'relative',
-                      height: 30,
-                      width: 50,
-                      borderRadius: 1,
-                      cursor: 'pointer',
-                      transition: '0.2s',
-                      background: theme.value
-                    }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        } */}
-
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          {/* Left side */}
-          <Grid xs={12} sm={9}>
-            <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Members</Typography>
-
-              {/* Feature 03: Xử lý các thành viên của Card */}
-              <CardUserGroup
-                cardMemberIds={activeCard?.memberIds}
-                onUpdateCardMembers={onUpdateCardMembers}
-              />
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Labels</Typography>
-
-              {/* Feature Labels */}
-              <CardLabel
-                labels={activeCard?.labels}
-                onUpdateCardLabel={onUpdateCardLabel}
-              />
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <SubjectRoundedIcon />
-                <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Description</Typography>
-              </Box>
-
-              {/* Feature 04: Xử lý mô tả của Card */}
-              <CardDescriptionMdEditor
-                cardDescriptionProp = {activeCard?.description}
-                handleUpdateCardDescription = {onUpdateCardDescription}
-              />
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <DvrOutlinedIcon />
-                <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Activity</Typography>
-              </Box>
-
-              {/* Feature 05: Xử lý các hành động, ví dụ comment vào Card */}
-              <CardActivitySection
-                cardComments = {activeCard?.comments}
-                onAddCardComment = {onAddCardComment}
-              />
-            </Box>
-          </Grid>
-
-          {/* Right side */}
-          <Grid xs={12} sm={3}>
-            <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Add To Card</Typography>
-            <Stack direction="column" spacing={1}>
-
-              {!activeCard?.memberIds?.includes(currentUser._id) &&
-              // {/* Feature 06: Xử lý hành động bản thân user tự join vào card */}
-                <SidebarItem
-                  className="active"
-                  onClick={() => onUpdateCardMembers({
-                    userId: currentUser._id,
-                    action: CARD_MEMBER_ACTIONS.ADD
-                  })}
-                >
-                  <PersonOutlineOutlinedIcon fontSize="small" />
-                  Join
-                </SidebarItem>
-              }
-              {/* Feature 07: Xử lý hành động cập nhật ảnh Cover của Card */}
-              <SidebarItem className="active" component="label">
-                <ImageOutlinedIcon fontSize="small" />
-                Cover
-                <VisuallyHiddenInput type="file" onChange={onUploadCardCover} />
-              </SidebarItem>
-
-              <SidebarItem><AttachFileOutlinedIcon fontSize="small" />Attachment</SidebarItem>
-              <SidebarItem><TaskAltOutlinedIcon fontSize="small" />Checklist</SidebarItem>
-              <SidebarItem><WatchLaterOutlinedIcon fontSize="small" />Dates</SidebarItem>
-              <SidebarItem><AutoFixHighOutlinedIcon fontSize="small" />Custom Fields</SidebarItem>
-            </Stack>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
-            <Stack direction="column" spacing={1}>
-              <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem>
-              <SidebarItem><AddToDriveOutlinedIcon fontSize="small" />Google Drive</SidebarItem>
-              <SidebarItem><AddOutlinedIcon fontSize="small" />Add Power-Ups</SidebarItem>
-            </Stack>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
-            <Stack direction="column" spacing={1}>
-              <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem>
-              <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem>
-              <SidebarItem
-                onClick={handleDeleteCard}
-                sx={{
-                  '&:hover': {
-                    color: 'warning.dark',
-                    '& .delete-forever-icon': { color: 'warning.dark' }
-                  }
-                }}
-              >
-                <DeleteForeverIcon fontSize="small" className="delete-forever-icon" />Delete
-              </SidebarItem>
-              <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
-              <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
-            </Stack>
-          </Grid>
-        </Grid>
-      </Box>
-    </Modal>
-  )
+  return <Dialog open={open && Boolean(card)} onClose={() => { if (!busy) close() }} fullWidth maxWidth='sm'>
+    <form onSubmit={save}><DialogTitle>Edit card</DialogTitle><DialogContent>
+      {error && <Alert severity='error'>{error}</Alert>}
+      <TextField autoFocus required fullWidth margin='dense' label='Title' inputProps={{ maxLength: 50 }} value={title} onChange={event => setTitle(event.target.value)} />
+      <TextField fullWidth multiline minRows={5} margin='dense' label='Description' inputProps={{ maxLength: 10000 }} value={description} onChange={event => setDescription(event.target.value)} />
+    </DialogContent><DialogActions>
+      <Button color='error' disabled={busy} onClick={remove}>Delete card</Button>
+      <Button disabled={busy} onClick={close}>Cancel</Button>
+      <Button type='submit' disabled={busy || !title.trim()} variant='contained'>Save</Button>
+    </DialogActions></form>
+  </Dialog>
 }
-
 export default ActiveCard

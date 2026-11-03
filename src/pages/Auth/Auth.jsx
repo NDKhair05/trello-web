@@ -24,7 +24,7 @@ function Auth() {
       minHeight: '100vh',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      background: 'url("https://res.cloudinary.com/drekaw6rd/image/upload/v1759980145/a_minimal_and_imagin_e9zsnn.png")',
+      background: 'linear-gradient(135deg, #0c2440, #176b8a)',
       backgroundRepeat: 'no-repeat',
       backgroundSize: 'cover',
       backgroundPosition: 'center',

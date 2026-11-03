@@ -1,5 +1,6 @@
 // TrungQuanDev: https://youtube.com/@trungquandev
 import Box from '@mui/material/Box'
+import particles from '~/assets/404/particles.png'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import HomeIcon from '@mui/icons-material/Home'
@@ -25,7 +26,7 @@ function NotFound() {
         animation: 'stars 12s linear infinite alternate',
         width: '100%',
         height: '100%',
-        backgroundImage: 'url("src/assets/404/particles.png")',
+        backgroundImage: `url(${particles})`,
         backgroundSize: 'contain',
         backgroundRepeat: 'repeat',
         backgroundPosition: 'center',

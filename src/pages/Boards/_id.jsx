@@ -1,149 +1,82 @@
-//Board Details
-import Container from '@mui/material/Container'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { Alert, Box, Button, Container, LinearProgress } from '@mui/material'
+import { useDispatch, useSelector } from 'react-redux'
+import { cloneDeep } from 'lodash'
 import AppBar from '~/components/AppBar/AppBar'
+import ActiveCard from '~/components/Modal/ActiveCard/ActiveCard'
+import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
 import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
-import { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
-import ActiveCard from '~/components/Modal/ActiveCard/ActiveCard'
-
-import {
-  updateBoardDetailsAPI,
-  updateColumnDetailsAPI,
-  moveCardToDifferentColumnAPI
-} from '~/apis'
-import { cloneDeep } from 'lodash'
-// import { mockData } from '~/apis/mock-data'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  fetchBoardDetailsAPI,
-  updateCurrentActiveBoard,
-  selectCurrentActiveBoard
-} from '~/redux/activeBoard/activeBoardSlice'
-import { socketIoInstance } from '~/sockeClient'
-import { selectCurrentUser } from '~/redux/user/userSlice'
-import { selectCurrentNotifications } from '~/redux/notifications/notificationsSlice'
+import { moveCardToDifferentColumnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI } from '~/apis'
+import { realIds } from '~/apis/mappers'
+import { fetchBoardDetailsAPI, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { clearAndHideCurrentActiveCard } from '~/redux/acitveCard/activeCardSlice'
 
 function Board() {
-  const dispatch = useDispatch()
-  // const [board, setBoard] = useState(null)
-  const board = useSelector(selectCurrentActiveBoard)
-  const currentUser = useSelector(selectCurrentUser)
-  const notifications = useSelector(selectCurrentNotifications)
-
   const { boardId } = useParams()
-
+  const dispatch = useDispatch()
+  const { currentActiveBoard: board, loading, error } = useSelector(state => state.activeBoard)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [revision, setRevision] = useState(0)
+  const savingRef = useRef(false)
+  const routeRef = useRef(boardId)
+  routeRef.current = boardId
   useEffect(() => {
-    // const boardId = '6896e71dbc96537aa7507104'
-    //Call API
-    dispatch(fetchBoardDetailsAPI(boardId))
-
-    const newMemberToBoard = (payload) => {
-      if (payload.inviterId === currentUser._id) {
-        dispatch(fetchBoardDetailsAPI(boardId))
+    setSaveError('')
+    dispatch(clearAndHideCurrentActiveCard())
+    const request = dispatch(fetchBoardDetailsAPI(boardId))
+    return () => request.abort()
+  }, [dispatch, boardId])
+  const saveOrder = async (nextBoard, operation) => {
+    if (savingRef.current) return
+    savingRef.current = true
+    const previous = cloneDeep(board)
+    const savingBoardId = boardId
+    setSaving(true)
+    setSaveError('')
+    dispatch(updateCurrentActiveBoard(nextBoard))
+    try {
+      await operation()
+    } catch (err) {
+      if (routeRef.current === savingBoardId) {
+        setSaveError(err.message)
+        dispatch(updateCurrentActiveBoard(previous))
+        setRevision(value => value + 1)
+        // Recover if another tab changed the board or the write reached the server before a network error.
+        await dispatch(fetchBoardDetailsAPI(savingBoardId))
       }
+    } finally {
+      savingRef.current = false
+      setSaving(false)
     }
-
-    const updatedActiveBoard = (board) => {
-      if (board._id === boardId) {
-        dispatch(fetchBoardDetailsAPI(board._id))
-      }
-    }
-
-    socketIoInstance.on('BE_UPDATE_ACTIVE_BOARD', updatedActiveBoard)
-    socketIoInstance.on('BE_USER_RESPONDED_NOTIFICATION', newMemberToBoard)
-
-    return () => {
-      socketIoInstance.off('BE_UPDATE_ACTIVE_BOARD', updatedActiveBoard)
-      socketIoInstance.off('BE_USER_RESPONDED_NOTIFICATION', newMemberToBoard)
-    }
-
-  }, [dispatch, boardId, currentUser._id])
-
-  //Func này có nhiệm vụ là gọi API và xử lí khi kéo thả Column xong xuôi
-  const moveColumn = (dndOrderedColumns) => {
-    //Update cho chuẩn dữ liệu State Board
-    const dndOrderedColumnsIds = dndOrderedColumns.map(c => c._id)
-    const newBoard = { ...board }
-    newBoard.columns = dndOrderedColumns
-    newBoard.columnOrderIds = dndOrderedColumnsIds
-    //Gọi API update board
-    updateBoardDetailsAPI(newBoard._id, { columnOrderIds: dndOrderedColumnsIds })
-      .then(() => {
-        dispatch(updateCurrentActiveBoard(newBoard))
-      })
   }
-
-  const moveCardInTheSameColumn = (dndOrderedCards, dndOrderedCardsIds, columnId) => {
-    //Update cho chuẩn dữ liệu State Board
-    const newBoard = cloneDeep(board)
-    const columnToUpdate = newBoard.columns.find(column => column._id === columnId)
-    if (columnToUpdate) {
-      columnToUpdate.cards = dndOrderedCards
-      columnToUpdate.cardOrderIds = dndOrderedCardsIds
-    }
-    //Gọi API update Column
-    updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderedCardsIds })
-      .then(() => {
-        dispatch(updateCurrentActiveBoard(newBoard))
-      })
+  const moveColumn = columns => saveOrder({ ...board, columns, columnOrderIds: columns.map(c => c._id) },
+    () => updateBoardDetailsAPI(board._id, { columnOrderIds: columns.map(c => c._id) }))
+  const moveCardInTheSameColumn = (cards, ids, columnId) => {
+    const next = cloneDeep(board)
+    const column = next.columns.find(c => c._id === columnId)
+    column.cards = cards
+    column.cardOrderIds = ids
+    return saveOrder(next, () => updateColumnDetailsAPI(columnId, { cardOrderIds: realIds(ids) }))
   }
-
-  /**
-   * Khi di chuyển card sang column khác:
-   * B1: Cập nhật lại mảng cardOrderIds của Column ban đầu chứa nó (Hiểu bản chất là xóa cái _id của Card ra khỏi mảng)
-   * B2: Cập nhật mảng cardOrderIds của Column tiếp theo (Hiểu bản chất là thêm _id của Card vào mảng)
-   * B3: Cập nhật lại trường columnId mới của cái Card đã kéo
-   * => Làm một API support riêng
-   */
-  const moveCardToDifferentColumn = (currentCardId, prevColumnId, nextColumnId, dndOrderedColumns) => {
-    //Update cho chuẩn dữ liệu state Board
-    const dndOrderedColumnsIds = dndOrderedColumns.map(c => c._id)
-    const newBoard = { ...board }
-    newBoard.columns = dndOrderedColumns
-    newBoard.columnOrderIds = dndOrderedColumnsIds
-
-    let prevCardOrderIds = dndOrderedColumns.find(c => c._id === prevColumnId)?.cardOrderIds
-    //Xử lí kéo thả Card ra khỏi Column, Column rỗng sẽ có placeholder-card, cần xóa nó đi sau khi kéo Card cuối cùng ra khỏi Column đó
-    if (prevCardOrderIds[0].includes('placeholder-card')) prevCardOrderIds = []
-
-    //Call API xử lý phía Back-end
-    moveCardToDifferentColumnAPI({
-      currentCardId,
-      prevColumnId,
-      prevCardOrderIds,
-      nextColumnId,
-      nextCardOrderIds: dndOrderedColumns.find(c => c._id === nextColumnId)?.cardOrderIds
-    })
-      .then(() => {
-        dispatch(updateCurrentActiveBoard(newBoard))
-      })
-
-  }
-
-  if (!board) {
-    return (
-      <PageLoadingSpinner caption = "Loading Board...." />
-    )
-  }
-
-  return (
-    <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
-      {/*Modal Active Card, check đóng/mở dựa theo cái State được lưu trong Redux*/}
+  const moveCardToDifferentColumn = (cardId, sourceId, targetId, columns) => saveOrder({ ...board, columns },
+    () => moveCardToDifferentColumnAPI({
+      boardId: board._id, currentCardId: cardId, prevColumnId: sourceId, nextColumnId: targetId,
+      prevCardOrderIds: columns.find(c => c._id === sourceId)?.cardOrderIds || [],
+      nextCardOrderIds: columns.find(c => c._id === targetId)?.cardOrderIds || []
+    }))
+  if (!board || board._id !== boardId) return <><AppBar />{loading ? <PageLoadingSpinner caption='Loading board...' /> : <Box sx={{ p: 4 }}><Alert severity='error'>{error || 'Board not found or access denied.'}</Alert><Button component={Link} to='/boards'>Back to boards</Button></Box>}</>
+  return <Container disableGutters maxWidth={false} sx={{ height: '100vh', bgcolor: 'primary.dark' }}>
+    <AppBar />
+    <Box sx={{ pointerEvents: saving ? 'none' : 'auto' }}>
+      <BoardBar board={board} />
+      {saving && <LinearProgress sx={{ position: 'absolute', width: '100%', zIndex: 10 }} />}
+      {(saveError || error) && <Alert severity='error' onClose={() => setSaveError('')}>{saveError || error}</Alert>}
+      <BoardContent key={`${boardId}-${revision}`} board={board} moveColumn={moveColumn} moveCardInTheSameColumn={moveCardInTheSameColumn} moveCardToDifferentColumn={moveCardToDifferentColumn} />
       <ActiveCard />
-      {/** Các thành phần còn lại của Board Details */}
-      <AppBar status='inBoard' board={board} notifications={notifications} />
-      <BoardBar board = {board}/>
-      <BoardContent
-        board = {board}
-
-        moveColumn = {moveColumn}
-        moveCardInTheSameColumn = {moveCardInTheSameColumn}
-        moveCardToDifferentColumn = {moveCardToDifferentColumn}
-      />
-    </Container>
-  )
+    </Box>
+  </Container>
 }
-
 export default Board
