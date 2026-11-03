@@ -71,3 +71,38 @@ export const gradientThemes = [
   }
 ]
 
+export const labelColorsDefault = [
+  {
+    id: 0,
+    value: '#4bce97'
+  },
+  {
+    id: 1,
+    value: '#eed12b'
+  },
+  {
+    id: 2,
+    value: '#fca700'
+  },
+  {
+    id: 3,
+    value: '#f87168'
+  },
+  {
+    id: 4,
+    value: '#c97cf4'
+  },
+  {
+    id: 5,
+    value: '#669df1'
+  },
+  {
+    id: 6,
+    value: '#6cc3e0'
+  },
+  {
+    id: 7,
+    value: '#94c748'
+  }
+]
+

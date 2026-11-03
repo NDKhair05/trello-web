@@ -7,7 +7,6 @@ import Grid from '@mui/material/Unstable_Grid2'
 import Stack from '@mui/material/Stack'
 import Divider from '@mui/material/Divider'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
-import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
@@ -48,6 +47,7 @@ import { useConfirm } from 'material-ui-confirm'
 import { cloneDeep } from 'lodash'
 import { socketIoInstance } from '~/sockeClient'
 import { useEffect } from 'react'
+import CardLabel from './CardLabelModal'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -144,12 +144,16 @@ function ActiveCard() {
     )
   }
 
+  const onUpdateCardLabel = async (incomingLabelInfo) => {
+    await callApiUpdateCard({ incomingLabelInfo })
+  }
+
   const onAddCardComment = async (commentToAdd) => {
     await callApiUpdateCard({ commentToAdd })
   }
 
-  const onUpdateCardMembers = (incomingMemberInfo) => {
-    callApiUpdateCard({ incomingMemberInfo })
+  const onUpdateCardMembers = async (incomingMemberInfo) => {
+    await callApiUpdateCard({ incomingMemberInfo })
   }
 
   const confirmDeleteCard = useConfirm()
@@ -184,7 +188,6 @@ function ActiveCard() {
           })
       })
       .catch(() => {})
-
   }
 
   return (
@@ -235,16 +238,51 @@ function ActiveCard() {
             onChangedValue={onUpdateCardTitle} />
         </Box>
 
+        {/*Feature 02: Mảng các nhãn của card*/}
+        {/* {labelColorsDefault &&
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="span" sx={{ fontWeight: '550', fontSize: '14px' }}>Label</Typography>
+            <Grid container spacing={{ xs: 0.5, md: 1 }} sx={{ alignItems: 'center', mt: 1 }}>
+              {labelColorsDefault.map(theme => (
+                <Grid item key={theme.id} >
+                  <Paper
+                    sx={{
+                      position: 'relative',
+                      height: 30,
+                      width: 50,
+                      borderRadius: 1,
+                      cursor: 'pointer',
+                      transition: '0.2s',
+                      background: theme.value
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        } */}
+
+
         <Grid container spacing={2} sx={{ mb: 3 }}>
           {/* Left side */}
           <Grid xs={12} sm={9}>
             <Box sx={{ mb: 3 }}>
               <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Members</Typography>
 
-              {/* Feature 02: Xử lý các thành viên của Card */}
+              {/* Feature 03: Xử lý các thành viên của Card */}
               <CardUserGroup
                 cardMemberIds={activeCard?.memberIds}
                 onUpdateCardMembers={onUpdateCardMembers}
+              />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Labels</Typography>
+
+              {/* Feature Labels */}
+              <CardLabel
+                labels={activeCard?.labels}
+                onUpdateCardLabel={onUpdateCardLabel}
               />
             </Box>
 
@@ -254,7 +292,7 @@ function ActiveCard() {
                 <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Description</Typography>
               </Box>
 
-              {/* Feature 03: Xử lý mô tả của Card */}
+              {/* Feature 04: Xử lý mô tả của Card */}
               <CardDescriptionMdEditor
                 cardDescriptionProp = {activeCard?.description}
                 handleUpdateCardDescription = {onUpdateCardDescription}
@@ -267,7 +305,7 @@ function ActiveCard() {
                 <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Activity</Typography>
               </Box>
 
-              {/* Feature 04: Xử lý các hành động, ví dụ comment vào Card */}
+              {/* Feature 05: Xử lý các hành động, ví dụ comment vào Card */}
               <CardActivitySection
                 cardComments = {activeCard?.comments}
                 onAddCardComment = {onAddCardComment}
@@ -281,7 +319,7 @@ function ActiveCard() {
             <Stack direction="column" spacing={1}>
 
               {!activeCard?.memberIds?.includes(currentUser._id) &&
-              // {/* Feature 05: Xử lý hành động bản thân user tự join vào card */}
+              // {/* Feature 06: Xử lý hành động bản thân user tự join vào card */}
                 <SidebarItem
                   className="active"
                   onClick={() => onUpdateCardMembers({
@@ -293,7 +331,7 @@ function ActiveCard() {
                   Join
                 </SidebarItem>
               }
-              {/* Feature 06: Xử lý hành động cập nhật ảnh Cover của Card */}
+              {/* Feature 07: Xử lý hành động cập nhật ảnh Cover của Card */}
               <SidebarItem className="active" component="label">
                 <ImageOutlinedIcon fontSize="small" />
                 Cover
@@ -301,7 +339,6 @@ function ActiveCard() {
               </SidebarItem>
 
               <SidebarItem><AttachFileOutlinedIcon fontSize="small" />Attachment</SidebarItem>
-              <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem>
               <SidebarItem><TaskAltOutlinedIcon fontSize="small" />Checklist</SidebarItem>
               <SidebarItem><WatchLaterOutlinedIcon fontSize="small" />Dates</SidebarItem>
               <SidebarItem><AutoFixHighOutlinedIcon fontSize="small" />Custom Fields</SidebarItem>

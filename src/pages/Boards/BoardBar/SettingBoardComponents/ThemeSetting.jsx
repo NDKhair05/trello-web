@@ -28,7 +28,7 @@ function ThemeSetting({ board }) {
   }
 
 
-  const submitCreateNewBoard = () => {
+  const submitSelectTheme = () => {
     const newBoard = { ...board }
     newBoard.theme = theme
     // const { title, description, type } = data
@@ -142,7 +142,7 @@ function ThemeSetting({ board }) {
             <Typography variant="h6" component="h2">Edit theme</Typography>
           </Box>
           <Box id="modal-modal-description" sx={{ my: 2 }}>
-            <form onSubmit={handleSubmit(submitCreateNewBoard)}>
+            <form onSubmit={handleSubmit(submitSelectTheme)}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <ThemeSelector
                   value = {theme}

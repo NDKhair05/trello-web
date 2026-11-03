@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
-import { Card as MuiCard } from '@mui/material'
+import { Grid, Card as MuiCard, Paper } from '@mui/material'
 import CardActions from '@mui/material/CardActions'
 import CardContent from '@mui/material/CardContent'
 import CardMedia from '@mui/material/CardMedia'
@@ -29,7 +29,7 @@ function Card( { card } ) {
   }
 
   const shouldShowCardAction = () => {
-    return !!card?.memberIds?.length || !!card?.comments?.length || !!card?.attachments?.length
+    return !!card?.memberIds?.length || !!card?.comments?.length || !!card?.attachments?.length || !!card?.labels?.length
   }
 
   const setActiveCard = () => {
@@ -44,19 +44,44 @@ function Card( { card } ) {
       onClick={setActiveCard}
       ref={setNodeRef} style={dndKitCardStyles} {...attributes} {...listeners}
       sx={{
+        borderRadius: '8px',
         cursor: 'pointer',
         boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
         overflow: 'unset',
         display: card?.FE_PlaceholderCard ? 'none' : 'block',
-        border: '1px solid transparent',
+        border: '2px solid transparent',
         '&:hover': { borderColor: (theme) => theme.palette.primary.main }
       }}>
-      {card?.cover && <CardMedia sx={{ height: 140 }} image= {card.cover} />
+      {card?.cover && <CardMedia sx={{ height: 140, borderRadius: '8px 8px 0 0' }} image= {card.cover} component="img" />
       }
       <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
         <Typography>{card?.title}</Typography>
       </CardContent>
       {shouldShowCardAction() &&
+      <>
+        {!!card?.labels?.length &&
+        <CardContent sx={{ pt: 0, pl: 1.5 }}>
+          <Grid container spacing={{ xs: 0.5, md: 0.5 }}>
+            {card?.labels?.map((label, index) => (
+              <Grid item key={index} >
+                <Paper
+                  sx={{
+                    position: 'relative',
+                    height: 15,
+                    width: 40,
+                    borderRadius: 1,
+                    cursor: 'pointer',
+                    transition: '0.2s',
+                    background: label.labelValue
+                  }}
+                />
+              </Grid>
+            ))
+            }
+          </Grid>
+        </CardContent>
+        }
+
         <CardActions sx={{ p: '0 4px 8px 4px' }}>
           {!!card?.memberIds?.length &&
             <Button startIcon={<GroupIcon />} size="small">{card?.memberIds?.length}</Button>
@@ -68,6 +93,7 @@ function Card( { card } ) {
             <Button startIcon={<AttachmentIcon />} size="small">{(card?.attachments)?.length}</Button>
           }
         </CardActions>
+      </>
       }
     </MuiCard>
   )
